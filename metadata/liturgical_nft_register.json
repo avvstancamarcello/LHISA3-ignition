@@ -1,0 +1,101 @@
+{
+  "liturgicalNFTs": [
+    {
+      "name": "Panis Angelicus",
+      "description": "Panis angelicus fit panis hominum. The bread of angels becomes the bread of humanity.",
+      "attributes": [
+        { "trait_type": "Typus", "value": "Cantus Liturgicus" },
+        { "trait_type": "Lingua", "value": "Latina & Anglica" },
+        { "trait_type": "Fonte", "value": "Sanctus Thomas Aquinas" },
+        { "trait_type": "Funzione", "value": "Meditatio & Suoneria" }
+      ],
+      "audio": "ipfs://QmPanisAngelicusAudio",
+      "voiceover": {
+        "latin": "Panis angelicus fit panis hominum. Dat panis caelicus figuris terminum.",
+        "english": "The bread of angels becomes the bread of men. The heavenly bread ends all symbols."
+      },
+      "approvedBy": ""
+    },
+    {
+      "name": "Ave Verum Corpus",
+      "description": "Ave verum corpus natum de Maria Virgine. Hail, true body born of the Virgin Mary.",
+      "attributes": [
+        { "trait_type": "Typus", "value": "Cantus Eucharisticus" },
+        { "trait_type": "Lingua", "value": "Latina & Anglica" },
+        { "trait_type": "Fonte", "value": "Mozart / Liturgia Romana" },
+        { "trait_type": "Funzione", "value": "Adoratio & Suoneria" }
+      ],
+      "audio": "ipfs://QmAveVerumCorpusAudio",
+      "voiceover": {
+        "latin": "Ave verum corpus natum de Maria Virgine.",
+        "english": "Hail, true body born of the Virgin Mary."
+      },
+      "approvedBy": ""
+    },
+    {
+      "name": "Lux Aeterna",
+      "description": "Lux aeterna luceat eis, Domine. May eternal light shine upon them, O Lord.",
+      "attributes": [
+        { "trait_type": "Typus", "value": "Cantus Memorialis" },
+        { "trait_type": "Lingua", "value": "Latina & Anglica" },
+        { "trait_type": "Fonte", "value": "Requiem Liturgicum" },
+        { "trait_type": "Funzione", "value": "Commemoratio & Suoneria" }
+      ],
+      "audio": "ipfs://QmLuxAeternaAudio",
+      "voiceover": {
+        "latin": "Lux aeterna luceat eis, Domine.",
+        "english": "May eternal light shine upon them, O Lord."
+      },
+      "approvedBy": ""
+    },
+    {
+      "name": "Adeste Fideles",
+      "description": "Adeste fideles, laeti triumphantes. O come, all ye faithful, joyful and triumphant.",
+      "attributes": [
+        { "trait_type": "Typus", "value": "Cantus Natalicius" },
+        { "trait_type": "Lingua", "value": "Latina & Anglica" },
+        { "trait_type": "Fonte", "value": "Traditio Ecclesiastica" },
+        { "trait_type": "Funzione", "value": "Processio & Suoneria" }
+      ],
+      "audio": "ipfs://QmAdesteFidelesAudio",
+      "voiceover": {
+        "latin": "Adeste fideles, laeti triumphantes.",
+        "english": "O come, all ye faithful, joyful and triumphant."
+      },
+      "approvedBy": ""
+    },
+    {
+      "name": "Ave Maria",
+      "description": "Ave Maria, gratia plena. Hail Mary, full of grace.",
+      "attributes": [
+        { "trait_type": "Typus", "value": "Cantus Marianus" },
+        { "trait_type": "Lingua", "value": "Latina & Anglica" },
+        { "trait_type": "Fonte", "value": "Franz Schubert / Liturgia Marialis" },
+        { "trait_type": "Funzione", "value": "Precatio & Suoneria" }
+      ],
+      "audio": "ipfs://QmAveMariaSchubertAudio",
+      "voiceover": {
+        "latin": "Ave Maria, gratia plena.",
+        "english": "Hail Mary, full of grace."
+      },
+      "approvedBy": ""
+    },
+    {
+      "name": "Tu sei la mia vita",
+      "description": "Tu sei la mia vita, altro io non ho. You are my life, I have nothing else.",
+      "attributes": [
+        { "trait_type": "Typus", "value": "Cantus Contemporaneus" },
+        { "trait_type": "Lingua", "value": "Italiana & Anglica" },
+        { "trait_type": "Fonte", "value": "Liturgia Popolare" },
+        { "trait_type": "Funzione", "value": "Suoneria & Meditatio" }
+      ],
+      "audio": "ipfs://QmTuSeiLaMiaVitaAudio",
+      "voiceover": {
+        "latin": "Tu es vita mea, nihil aliud habeo.",
+        "english": "You are my life, I have nothing else."
+      },
+      "approvedBy": ""
+    }
+  ]
+}
+

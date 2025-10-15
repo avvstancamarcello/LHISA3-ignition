@@ -1,0 +1,134 @@
+{
+  "PlanetNFTs": {
+    "ReputationManager": {
+      "tokenId": 1,
+      "uri": "ipfs://QmPlanetReputation",
+      "assignedTo": "core_infrastructure"
+    },
+    "ImpactLogger": {
+      "tokenId": 2,
+      "uri": "ipfs://QmPlanetImpact",
+      "assignedTo": "core_infrastructure"
+    },
+    "SolidaryMemoryHill": {
+      "tokenId": 3,
+      "uri": "ipfs://QmPlanetMemory",
+      "assignedTo": "creative_cultural"
+    }
+  },
+  "SatelliteFTs": {
+    "DiagnosticBooking": {
+      "symbol": "DBFT",
+      "initialSupply": 1000000,
+      "assignedTo": "social_impact"
+    },
+    "SolidaryGamingBridge": {
+      "symbol": "SGBFT",
+      "initialSupply": 500000,
+      "assignedTo": "interoperability_bridges"
+    },
+    "SolidarySport": {
+      "symbol": "SSFT",
+      "initialSupply": 750000,
+      "assignedTo": "governance_consensus"
+    }
+  }
+}
+"NFTFleet": {
+  "SennoPerduto": {
+    "name": "Senno Perduto",
+    "description": "Catturato dalla Luna Storta, accende Luna Piena e solleva il mare.",
+    "attributes": [
+      { "trait_type": "Tipo Nave", "value": "Veliero della Memoria" },
+      { "trait_type": "Corrente Mareale", "value": "Etica" },
+      { "trait_type": "Porto", "value": "Opensea" },
+      { "trait_type": "Resistenza", "value": "Alta" },
+      { "trait_type": "Satellite", "value": "LUNA COMIX" }
+    ],
+    "image": "ipfs://QmSennoPerduto"
+  },
+  "VespucciNFT": {
+    "name": "Amerigo Vespucci",
+    "description": "Veliero immortale, ambasciatore della bellezza e della memoria italiana.",
+    "attributes": [
+      { "trait_type": "Tipo Nave", "value": "Veliero Storico" },
+      { "trait_type": "Corrente Mareale", "value": "Culturale" },
+      { "trait_type": "Porto", "value": "Opensea" },
+      { "trait_type": "Resistenza", "value": "Eterna" },
+      { "trait_type": "Satellite", "value": "LUNA COMIX" }
+    ],
+    "image": "ipfs://QmAmerigoNFT"
+  },
+  "GazaHope": {
+    "name": "Gaza Hope",
+    "description": "Nave umanitaria che solca le acque per portare aiuto e dignità.",
+    "attributes": [
+      { "trait_type": "Tipo Nave", "value": "Umanitaria" },
+      { "trait_type": "Corrente Mareale", "value": "Solidale" },
+      { "trait_type": "Porto", "value": "Opensea" },
+      { "trait_type": "Resistenza", "value": "Altissima" },
+      { "trait_type": "Satellite", "value": "LUNA COMIX" }
+    ],
+    "image": "ipfs://QmGazaHope"
+  },
+  "LegalitaViva": {
+    "name": "Legalità Viva",
+    "description": "Nave della giustizia, scorta etica nel mare della memoria.",
+    "attributes": [
+      { "trait_type": "Tipo Nave", "value": "Scorta Etica" },
+      { "trait_type": "Corrente Mareale", "value": "Civica" },
+      { "trait_type": "Porto", "value": "Opensea" },
+      { "trait_type": "Resistenza", "value": "Costituzionale" },
+      { "trait_type": "Satellite", "value": "LUNA COMIX" }
+    ],
+    "image": "ipfs://QmLegalitaViva"
+  },
+  "CostaFestival": {
+    "name": "Costa Festival",
+    "description": "Nave da crociera che ospita il canto, la bellezza e la narrazione.",
+    "attributes": [
+      { "trait_type": "Tipo Nave", "value": "Crociera Narrativa" },
+      { "trait_type": "Corrente Mareale", "value": "Artistica" },
+      { "trait_type": "Porto", "value": "Opensea" },
+      { "trait_type": "Resistenza", "value": "Popolare" },
+      { "trait_type": "Satellite", "value": "LUNA COMIX" }
+    ],
+    "image": "ipfs://QmCostaFestival"
+  },
+  "CavourNFT": {
+    "name": "Nave Cavour",
+    "description": "Portaerei ammiraglia della Marina Militare, simbolo di protezione e potenza.",
+    "attributes": [
+      { "trait_type": "Tipo Nave", "value": "Portaerei Ammiraglia" },
+      { "trait_type": "Corrente Mareale", "value": "Difensiva" },
+      { "trait_type": "Porto", "value": "Opensea" },
+      { "trait_type": "Resistenza", "value": "Strategica" },
+      { "trait_type": "Satellite", "value": "LUNA COMIX" }
+    ],
+    "image": "ipfs://QmCavourNFT"
+  },
+  "CapitaneriaNFT": {
+    "name": "Capitaneria di Porto",
+    "description": "Nave di salvataggio che solleva vite dai naufragi della storia.",
+    "attributes": [
+      { "trait_type": "Tipo Nave", "value": "Salvataggio" },
+      { "trait_type": "Corrente Mareale", "value": "Umanitaria" },
+      { "trait_type": "Porto", "value": "Opensea" },
+      { "trait_type": "Resistenza", "value": "Vitale" },
+      { "trait_type": "Satellite", "value": "LUNA COMIX" }
+    ],
+    "image": "ipfs://QmCapitaneriaNFT"
+  },
+  "BlackPearlNFT": {
+    "name": "Black Pearl",
+    "description": "Nave pirata che naviga tra le correnti della fantasia e della ribellione.",
+    "attributes": [
+      { "trait_type": "Tipo Nave", "value": "Pirata Narrativa" },
+      { "trait_type": "Corrente Mareale", "value": "Creativa" },
+      { "trait_type": "Porto", "value": "Opensea" },
+      { "trait_type": "Resistenza", "value": "Indomita" },
+      { "trait_type": "Satellite", "value": "LUNA COMIX" }
+    ],
+    "image": "ipfs://QmBlackPearlNFT"
+  }
+}

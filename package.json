@@ -1,0 +1,17 @@
+{
+  "name": "cantiere-solidary",
+  "version": "1.0.0",
+  "description": "Cantiere di Sviluppo per l'Ecosistema Etico Solidary",
+  "author": "Marcello Stanca – Firenze",
+  "license": "UNLICENSED",
+  "donatedTo": "Caritas Internationalis – 1976-2026 Palazzo San Calisto, Città del Vaticano",
+  "type": "commonjs",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.4.0",
+    "@openzeppelin/contracts-upgradeable": "^5.4.0",
+    "@openzeppelin/hardhat-upgrades": "^3.9.1",
+    "dotenv": "^16.6.1",
+    "hardhat": "^2.26.3"
+  }
+}

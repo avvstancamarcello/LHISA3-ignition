@@ -1,0 +1,139 @@
+{
+  "pilgrimNFTs": [
+    {
+      "name": "Padova",
+      "description": "Città di Sant'Antonio, taumaturgo e predicatore universale.",
+      "attributes": [
+        { "trait_type": "Luogo", "value": "Padova" },
+        { "trait_type": "Santo Protettore", "value": "Sant'Antonio di Padova" },
+        { "trait_type": "Funzione", "value": "Tessera del Pellegrino" }
+      ],
+      "audio": "ipfs://QmPadovaAudioNFT",
+      "voiceover": {
+        "latin": "Sancte Antoni, ora pro nobis.",
+        "english": "Saint Anthony of Padua, guide our steps and open our hearts to the poor."
+      },
+      "approvedBy": ""
+    },
+    {
+      "name": "Cascia",
+      "description": "Luogo di Santa Rita, patrona delle cause impossibili.",
+      "attributes": [
+        { "trait_type": "Luogo", "value": "Cascia" },
+        { "trait_type": "Santo Protettore", "value": "Santa Rita da Cascia" },
+        { "trait_type": "Funzione", "value": "Tessera del Pellegrino" }
+      ],
+      "audio": "ipfs://QmCasciaAudioNFT",
+      "voiceover": {
+        "latin": "Sancta Rita, ora pro nobis.",
+        "english": "Saint Rita of Cascia, intercede for those who walk in darkness and seek the impossible."
+      },
+      "approvedBy": ""
+    },
+    {
+      "name": "Siena",
+      "description": "Città natale di Santa Caterina, patrona d’Italia e d’Europa.",
+      "attributes": [
+        { "trait_type": "Luogo", "value": "Siena" },
+        { "trait_type": "Santo Protettore", "value": "Santa Caterina da Siena" },
+        { "trait_type": "Funzione", "value": "Tessera del Pellegrino" }
+      ],
+      "audio": "ipfs://QmSienaAudioNFT",
+      "voiceover": {
+        "latin": "Sancta Catharina Senensis, ora pro nobis.",
+        "english": "Saint Catherine of Siena, illuminate our conscience and strengthen our resolve."
+      },
+      "approvedBy": ""
+    },
+    {
+      "name": "Bari",
+      "description": "Città di San Nicola, protettore dei bambini e dei marinai.",
+      "attributes": [
+        { "trait_type": "Luogo", "value": "Bari" },
+        { "trait_type": "Santo Protettore", "value": "San Nicola di Bari" },
+        { "trait_type": "Funzione", "value": "Tessera del Pellegrino" }
+      ],
+      "audio": "ipfs://QmBariAudioNFT",
+      "voiceover": {
+        "latin": "Sancte Nicolae, ora pro nobis.",
+        "english": "Saint Nicholas of Bari, protect our journeys and bless our generosity."
+      },
+      "approvedBy": ""
+    },
+    {
+      "name": "Trani",
+      "description": "Porta adriatica della fede, custode di antiche reliquie.",
+      "attributes": [
+        { "trait_type": "Luogo", "value": "Trani" },
+        { "trait_type": "Santo Protettore", "value": "San Nicola Pellegrino" },
+        { "trait_type": "Funzione", "value": "Tessera del Pellegrino" }
+      ],
+      "audio": "ipfs://QmTraniAudioNFT",
+      "voiceover": {
+        "latin": "Sancte Nicolae Peregrinus, ora pro nobis.",
+        "english": "Saint Nicholas the Pilgrim, walk beside us on the road to holiness."
+      },
+      "approvedBy": ""
+    },
+    {
+      "name": "Palermo",
+      "description": "Città di Santa Rosalia, protettrice contro le pestilenze.",
+      "attributes": [
+        { "trait_type": "Luogo", "value": "Palermo" },
+        { "trait_type": "Santo Protettore", "value": "Santa Rosalia" },
+        { "trait_type": "Funzione", "value": "Tessera del Pellegrino" }
+      ],
+      "audio": "ipfs://QmPalermoAudioNFT",
+      "voiceover": {
+        "latin": "Sancta Rosalia, ora pro nobis.",
+        "english": "Saint Rosalia, shield us from affliction and purify our hearts."
+      },
+      "approvedBy": ""
+    },
+    {
+      "name": "Cagliari",
+      "description": "Città di Sant’Efisio, martire e protettore della Sardegna.",
+      "attributes": [
+        { "trait_type": "Luogo", "value": "Cagliari" },
+        { "trait_type": "Santo Protettore", "value": "Sant'Efisio" },
+        { "trait_type": "Funzione", "value": "Tessera del Pellegrino" }
+      ],
+      "audio": "ipfs://QmCagliariAudioNFT",
+      "voiceover": {
+        "latin": "Sancte Ephisi, ora pro nobis.",
+        "english": "Saint Efisio, defend our land and sanctify our mission."
+      },
+      "approvedBy": ""
+    },
+    {
+      "name": "Santa Maria di Leuca",
+      "description": "Santuario Finis Mundi, punto terminale della Via Francigena.",
+      "attributes": [
+        { "trait_type": "Luogo", "value": "Santa Maria di Leuca" },
+        { "trait_type": "Santo Protettore", "value": "Maria, Stella Maris" },
+        { "trait_type": "Funzione", "value": "Tessera del Pellegrino" }
+      ],
+      "audio": "ipfs://QmLeucaAudioNFT",
+      "voiceover": {
+        "latin": "Ave Maris Stella, ora pro nobis.",
+        "english": "Hail Star of the Sea, guide us to the end of our earthly pilgrimage."
+      },
+      "approvedBy": ""
+    },
+    {
+      "name": "Santiago de Compostela",
+      "description": "Meta del Cammino, tomba dell’Apostolo Giacomo.",
+      "attributes": [
+        { "trait_type": "Luogo", "value": "Santiago de Compostela" },
+        { "trait_type": "Santo Protettore", "value": "San Giacomo Maggiore" },
+        { "trait_type": "Funzione", "value": "Tessera del Pellegrino" }
+      ],
+      "audio": "ipfs://QmSantiagoAudioNFT",
+      "voiceover": {
+        "latin": "Sancte Iacobe, ora pro nobis.",
+        "english": "Saint James the Greater, bless our steps and receive our devotion."
+      },
+      "approvedBy": ""
+    }
+  ]
+}
