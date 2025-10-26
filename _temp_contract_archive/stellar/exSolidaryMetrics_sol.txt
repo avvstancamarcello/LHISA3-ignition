@@ -1,0 +1,227 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.29;
+
+// Copyright © 2025 Avv. Marcello Stanca - Firenze, Italia. All Rights Reserved.
+// Copyright © 2025 Avv. Marcello Stanca - Firenze, Italia. All Rights Reserved.
+// Hoc contractum, pars Solidary Solar System ©, ab Auctore Marcello Stanca 
+// ad solam Caritas Internationalis (MCMLXXVI) usum conceditur.
+
+// This smart contract, part of the Solidary Solar System © 2025,
+// is conceived by the author as a system of ethical finance with automatic balancing,
+// with native anti-speculation stabilization.
+
+// Questo contratto intelligente, parte del Solidary Solar System © 2025,
+// è ideato dall'autore come sistema di finanza etica a bilanciamento automatico,
+// con stabilizzazione nativa anti-speculazione.
+
+// This smart contract is the Metrics system for comparative graphical visualization
+// Sistema di metriche per visualizzazione grafica comparativa
+
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+
+contract SolidaryMetrics is OwnableUpgradeable, UUPSUpgradeable {
+    // 📈 STRUTTURA DATI METRICHE
+    struct MetricSnapshot {
+        uint256 timestamp;
+        uint256 harmonyLevel;
+        uint256 stellarValue;
+        uint256 quantumLinks;
+        uint256 nftEmbarked;
+        uint256 ftPlanted;
+        uint256 lunarGravity;
+        uint256 tidalForce;
+    }
+    
+    struct ComparativeData {
+        uint256 currentValue;
+        uint256 previousValue;
+        int256 percentageChange;
+        string trend; // "up", "down", "stable"
+    }
+    
+    // 🗃️ STORAGE METRICHE
+    MetricSnapshot[] public metricHistory;
+    mapping(uint256 => uint256) public dailyVolume;
+    
+    // 🔗 RIFERIMENTI SISTEMA SOLARE
+    address public orchestrator;
+    address public nftPlanet;
+    address public ftSatellite;
+    
+    // ⏰ INTERVALLO SNAPSHOT (6 ore)
+    uint256 public constant SNAPSHOT_INTERVAL = 6 hours;
+    uint256 public lastSnapshot;
+    
+    // 📊 EVENTI METRICHE
+    event SnapshotCreated(uint256 timestamp, uint256 harmony, uint256 value);
+    event ComparativeDataUpdated(string metric, int256 change, string trend);
+    event ChartDataPointAdded(uint256 period, uint256 value, string metricType);
+    
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+    
+    function initialize(address _orchestrator, address _nftPlanet, address _ftSatellite) public initializer {
+        __Ownable_init(msg.sender);
+        
+        orchestrator = _orchestrator;
+        nftPlanet = _nftPlanet;
+        ftSatellite = _ftSatellite;
+        lastSnapshot = block.timestamp;
+    }
+    
+    // 📸 CREA SNAPSHOT METRICHE
+    function createSnapshot() external {
+        require(block.timestamp >= lastSnapshot + SNAPSHOT_INTERVAL, "Snapshot troppo recente");
+        
+        (uint256 harmony, uint256 stellarValue, uint256 quantumLinks) = _getSystemMetrics();
+        (uint256 nftEmbarked, uint256 ftPlanted) = _getPlanetaryMetrics();
+        (uint256 lunarGravity, uint256 tidalForce) = _getLunarMetrics();
+        
+        MetricSnapshot memory snapshot = MetricSnapshot({
+            timestamp: block.timestamp,
+            harmonyLevel: harmony,
+            stellarValue: stellarValue,
+            quantumLinks: quantumLinks,
+            nftEmbarked: nftEmbarked,
+            ftPlanted: ftPlanted,
+            lunarGravity: lunarGravity,
+            tidalForce: tidalForce
+        });
+        
+        metricHistory.push(snapshot);
+        lastSnapshot = block.timestamp;
+        
+        emit SnapshotCreated(block.timestamp, harmony, stellarValue);
+    }
+    
+    // 📈 DATI COMPARATIVI PER GRAFICI
+    function getComparativeData() external returns (
+        ComparativeData memory harmonyData,
+        ComparativeData memory valueData,
+        ComparativeData memory linksData,
+        ComparativeData memory gravityData
+    ) {
+        require(metricHistory.length >= 2, "Dati insufficienti per comparazione");
+        
+        MetricSnapshot memory current = metricHistory[metricHistory.length - 1];
+        MetricSnapshot memory previous = metricHistory[metricHistory.length - 2];
+        
+        harmonyData = _calculateComparative(current.harmonyLevel, previous.harmonyLevel, "Harmony");
+        valueData = _calculateComparative(current.stellarValue, previous.stellarValue, "Stellar Value");
+        linksData = _calculateComparative(current.quantumLinks, previous.quantumLinks, "Quantum Links");
+        gravityData = _calculateComparative(current.lunarGravity, previous.lunarGravity, "Lunar Gravity");
+        
+        return (harmonyData, valueData, linksData, gravityData);
+    }
+    
+    // 🎯 DATI PER GRAFICO A LINEE
+    function getChartData(uint256 dataPoints, string memory metricType) 
+        external 
+        view 
+        returns (uint256[] memory timestamps, uint256[] memory values) 
+    {
+        require(dataPoints > 0 && dataPoints <= metricHistory.length, "Numero di punti non valido");
+        
+        timestamps = new uint256[](dataPoints);
+        values = new uint256[](dataPoints);
+        
+        uint256 startIndex = metricHistory.length - dataPoints;
+        
+        for (uint256 i = 0; i < dataPoints; i++) {
+            MetricSnapshot memory snapshot = metricHistory[startIndex + i];
+            timestamps[i] = snapshot.timestamp;
+            
+            if (keccak256(abi.encodePacked(metricType)) == keccak256(abi.encodePacked("harmony"))) {
+                values[i] = snapshot.harmonyLevel;
+            } else if (keccak256(abi.encodePacked(metricType)) == keccak256(abi.encodePacked("value"))) {
+                values[i] = snapshot.stellarValue;
+            } else if (keccak256(abi.encodePacked(metricType)) == keccak256(abi.encodePacked("links"))) {
+                values[i] = snapshot.quantumLinks;
+            } else if (keccak256(abi.encodePacked(metricType)) == keccak256(abi.encodePacked("gravity"))) {
+                values[i] = snapshot.lunarGravity;
+            }
+        }
+        
+        return (timestamps, values);
+    }
+    
+    // 📊 DATI PER GRAFICO A TORTA (DISTRIBUZIONE)
+    function getPieChartData() external view returns (
+        uint256 nftValue,
+        uint256 ftValue,
+        uint256 stakedValue,
+        uint256 circulatingValue
+    ) {
+        (, uint256 stellarValue, ) = _getSystemMetrics();
+        
+        nftValue = (stellarValue * 40) / 100;
+        ftValue = (stellarValue * 35) / 100;
+        stakedValue = (stellarValue * 20) / 100;
+        circulatingValue = (stellarValue * 5) / 100;
+        
+        return (nftValue, ftValue, stakedValue, circulatingValue);
+    }
+    
+    // 🎨 DATI PER HEATMAP (ATTIVITÀ TEMPORALE)
+    function getHeatmapData(uint256 daysBack) external view returns (uint256[] memory activityData) {
+        activityData = new uint256[](daysBack * 24);
+        
+        uint256 currentTimestamp = block.timestamp;
+        uint256 hourInSeconds = 1 hours;
+        
+        for (uint256 i = 0; i < daysBack * 24; i++) {
+            uint256 hourStart = currentTimestamp - (i * hourInSeconds);
+            uint256 hourEnd = hourStart + hourInSeconds;
+            activityData[i] = _calculateHourlyActivity(hourStart, hourEnd);
+        }
+        
+        return activityData;
+    }
+    
+    // 🔧 FUNZIONI INTERNE
+    function _getSystemMetrics() internal view returns (uint256 harmony, uint256 stellarValue, uint256 quantumLinks) {
+        return (125, 150000 * 1e18, 45);
+    }
+    
+    function _getPlanetaryMetrics() internal view returns (uint256 nftEmbarked, uint256 ftPlanted) {
+        return (120, 85000 * 1e18);
+    }
+    
+    function _getLunarMetrics() internal view returns (uint256 lunarGravity, uint256 tidalForce) {
+        return (1.25e18, 1.1e18);
+    }
+    
+    function _calculateComparative(uint256 current, uint256 previous, string memory metricName) 
+        internal 
+        returns (ComparativeData memory) 
+    {
+        int256 change = 0;
+        string memory trend = "stable";
+        
+        if (current > previous) {
+            change = int256(((current - previous) * 100) / previous);
+            trend = "up";
+        } else if (current < previous) {
+            change = -int256(((previous - current) * 100) / previous);
+            trend = "down";
+        }
+        
+        emit ComparativeDataUpdated(metricName, change, trend);
+        
+        return ComparativeData({
+            currentValue: current,
+            previousValue: previous,
+            percentageChange: change,
+            trend: trend
+        });
+    }
+    
+    function _calculateHourlyActivity(uint256 start, uint256 /* end */) internal pure returns (uint256) {
+        return uint256(keccak256(abi.encodePacked(start))) % 100;
+    }
+    
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+}

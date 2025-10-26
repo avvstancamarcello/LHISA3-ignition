@@ -1,0 +1,208 @@
+import { CONTRACT_ADDRESSES, NETWORK_CONFIG } from '../constants/contracts';
+
+// ABI semplificata per mobile
+export const TOKEN_ABI = [
+  "function name() view returns (string)",
+  "function symbol() view returns (string)", 
+  "function decimals() view returns (uint8)",
+  "function balanceOf(address) view returns (uint256)",
+  "function transfer(address to, uint256 amount) returns (bool)",
+  "event Transfer(address indexed from, address indexed to, uint256 value)"
+];
+
+export const NFT_ABI = [
+  "function name() view returns (string)",
+  "function symbol() view returns (string)",
+  "function balanceOf(address owner) view returns (uint256)",
+  "function ownerOf(uint256 tokenId) view returns (address)",
+  "function tokenURI(uint256 tokenId) view returns (string)",
+  "function safeMint(address to, string memory uri) returns (uint256)",
+  "function getPhotoEmotion(uint256 tokenId) view returns (string memory)",
+  "function getPhotoTimestamp(uint256 tokenId) view returns (uint256)",
+  "event PhotoMinted(address indexed to, uint256 indexed tokenId, string emotion, uint256 timestamp)"
+];
+
+class Web3Service {
+  constructor() {
+    this.provider = null;
+    this.signer = null;
+    this.tokenContract = null;
+    this.nftContract = null;
+    this.isConnected = false;
+    this.userAddress = null;
+  }
+
+  // Connetti wallet (MetaMask/Coinbase Wallet/Brave)
+  async connectWallet() {
+    try {
+      console.log('🔍 Checking for wallets...');
+      
+      // PER WEB: Cerca ethereum in modo più aggressivo
+      let ethereumProvider;
+      
+      // Controlla diversi modi in cui i wallet si iniettano
+      if (typeof window !== 'undefined') {
+        ethereumProvider = window.ethereum || 
+                          window.web3?.currentProvider;
+      }
+
+      if (!ethereumProvider) {
+        throw new Error('Wallet non rilevato. Assicurati che:\n\n1. MetaMask/Brave Wallet sia installato\n2. La pagina sia ricaricata completamente\n3. L\'estensione sia abilitata per questo sito');
+      }
+
+      console.log('✅ Wallet provider trovato:', ethereumProvider);
+      
+      // Richiedi account
+      const accounts = await ethereumProvider.request({
+        method: 'eth_requestAccounts'
+      });
+      
+      if (!accounts || accounts.length === 0) {
+        throw new Error('Nessun account trovato. Connetti il wallet prima.');
+      }
+      
+      this.userAddress = accounts[0];
+      console.log('✅ Connected:', this.userAddress);
+
+      // Verifica rete
+      await this.checkNetwork(ethereumProvider);
+
+      // Setup ethers
+      const { ethers } = await import('ethers');
+      this.provider = new ethers.providers.Web3Provider(ethereumProvider);
+      this.signer = this.provider.getSigner();
+      this.isConnected = true;
+
+      // Inizializza contratti
+      this.tokenContract = new ethers.Contract(
+        CONTRACT_ADDRESSES.TOKEN,
+        TOKEN_ABI,
+        this.signer
+      );
+
+      this.nftContract = new ethers.Contract(
+        CONTRACT_ADDRESSES.NFT,
+        NFT_ABI, 
+        this.signer
+      );
+
+      return this.userAddress;
+    } catch (error) {
+      console.error('❌ Errore connessione:', error);
+      throw error;
+    }
+  }
+
+  // Verifica e cambia rete se necessario
+  async checkNetwork(ethereumProvider) {
+    const chainId = await ethereumProvider.request({ method: 'eth_chainId' });
+    const targetChainId = `0x${NETWORK_CONFIG.CHAIN_ID.toString(16)}`;
+    
+    console.log('🔗 Current chain:', chainId, 'Target:', targetChainId);
+    
+    if (chainId !== targetChainId) {
+      console.log('🔄 Switching to Base Network...');
+      await this.switchNetwork(ethereumProvider);
+    }
+  }
+
+  async switchNetwork(ethereumProvider) {
+    try {
+      await ethereumProvider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${NETWORK_CONFIG.CHAIN_ID.toString(16)}` }],
+      });
+    } catch (error) {
+      if (error.code === 4902) {
+        await ethereumProvider.request({
+          method: 'wallet_addEthereumChain',
+          params: [
+            {
+              chainId: `0x${NETWORK_CONFIG.CHAIN_ID.toString(16)}`,
+              chainName: NETWORK_CONFIG.CHAIN_NAME,
+              rpcUrls: [NETWORK_CONFIG.RPC_URL],
+              nativeCurrency: {
+                name: NETWORK_CONFIG.CURRENCY,
+                symbol: NETWORK_CONFIG.CURRENCY,
+                decimals: 18,
+              },
+              blockExplorerUrls: [NETWORK_CONFIG.EXPLORER],
+            },
+          ],
+        });
+      }
+    }
+  }
+
+  // Ottieni balance COMIX
+  async getTokenBalance() {
+    if (!this.tokenContract || !this.userAddress) {
+     throw new Error('Wallet non connesso');
+    }
+    const { ethers } = await import('ethers');
+    const balance = await this.tokenContract.balanceOf(this.userAddress);
+    return ethers.utils.formatUnits(balance, 18);
+  }
+
+  // Mint NFT foto
+  async mintPhotoNFT(imageUri, emotion) {
+    if (!this.nftContract) throw new Error('Wallet non connesso');
+    
+    console.log('📸 Minting NFT con emotion:', emotion);
+    
+    const transaction = await this.nftContract.safeMint(
+      this.userAddress,
+      imageUri,
+      { gasLimit: 300000 }
+    );
+    
+    console.log('⏳ Waiting for transaction...');
+    const receipt = await transaction.wait();
+    console.log('✅ NFT minted:', receipt.transactionHash);
+    
+    return receipt;
+  }
+
+  // Ottieni NFT dell'utente
+  async getUserNFTs() {
+    if (!this.nftContract || !this.userAddress) {
+      throw new Error('Wallet non connesso');
+    }
+    
+    try {
+      const balance = await this.nftContract.balanceOf(this.userAddress);
+      const nfts = [];
+      
+      for (let i = 0; i < balance.toNumber(); i++) {
+        const tokenId = await this.nftContract.tokenOfOwnerByIndex(this.userAddress, i);
+        const tokenURI = await this.nftContract.tokenURI(tokenId);
+        const emotion = await this.nftContract.getPhotoEmotion(tokenId);
+        const timestamp = await this.nftContract.getPhotoTimestamp(tokenId);
+        
+        nfts.push({
+          tokenId: tokenId.toString(),
+          tokenURI,
+          emotion,
+          timestamp: new Date(timestamp * 1000)
+        });
+      }
+      
+      return nfts;
+    } catch (error) {
+      console.error('Error fetching NFTs:', error);
+      return [];
+    }
+  }
+
+  // Disconnetti wallet
+  disconnect() {
+    this.provider = null;
+    this.signer = null;
+    this.tokenContract = null;
+    this.nftContract = null;
+    this.isConnected = false;
+    this.userAddress = null;
+  }
+}
+
+export default new Web3Service();

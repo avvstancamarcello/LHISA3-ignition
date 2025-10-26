@@ -1,0 +1,27 @@
+Note:
+
+NFT_STORAGE_KEY, ADMIN_PRIVATE_KEY, RPC_URL, METRICS_ADDRESS vanno impostate come config vars nella dashboard Heroku.
+
+Sicurezza: non mettere chiavi private in repository. Su Heroku usa heroku config:set VAR=....
+
+Per Pinata invece puoi usare @pinata/sdk e chiamare pinFileToIPFS / pinJSONToIPFS.
+
+6) Multisig / Governance (consiglio pratico)
+
+Al momento non hai multisig: per sicurezza non mettere sul DEFAULT_ADMIN_ROLE un unico indirizzo personale. Procedi in una delle seguenti modalità:
+
+Se devi deployare subito per test, mantieni il deployer come admin temporaneo, ma prepara un piano per trasferire il ruolo admin a un multisig (es. Gnosis Safe) prima di operazioni sensibili su mainnet.
+
+Prima del deploy su mainnet Polygon, crea un multisig (Gnosis Safe su Polygon) e imposta l'indirizzo multisig come admin durante l'inizializzazione del proxy (passalo come primo argomento admin nello script di deploy).
+
+Per cambiare admin dopo deploy: se DEFAULT_ADMIN_ROLE è controllato dal deployer, il deployer può grantRole(DEFAULT_ADMIN_ROLE, multisigAddress) e poi revokeRole(DEFAULT_ADMIN_ROLE, deployer).
+
+7) Raccomandazioni finali prima del deploy su Polygon mainnet
+
+Test approfonditi: unit / integration test e testnet full-flow (createSnapshot -> backend upload -> registerExternalCID).
+
+Proteggi le chiavi su Heroku (config vars), preferibilmente con un account admin dedicato e poi migra a multisig.
+
+Usa etherscan / polygonscan verification dopo deploy se vuoi che il codice sia leggibile pubblicamente.
+
+Documenta le responsabilità per chi può chiamare createSnapshot e chi può chiamare registerExternalCID.

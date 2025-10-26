@@ -1,0 +1,11 @@
+{
+  "network": "Polygon Mainnet",
+  "timestamp": "2025-10-22T15:59:25.859Z",
+  "orchestrator": "0x55A419ad18AB7333cA12f6fF6144aF7B9d7fB1AB",
+  "contracts": {
+    "SolidaryMetrics": "0x1f0bF59Bb46a308031fb05Bda23805B58df5F157",
+    "MareaMangaNFT": "0x5d8c88173EB32b9D6BE729DDFcD282a45464D025",
+    "LunaComicsFT": "0x3F9123cA250725b37D5a040fce82F059AbD1ff74"
+  },
+  "explorer": "https://polygonscan.com"
+}

@@ -1,0 +1,496 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+// © Copyright Marcello Stanca, Firenze, Italy
+
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+/**
+ * @title EthereumPolygonMultiTokenBridge
+ * @dev Bridge per pagamenti multi-token tra Ethereum (POL/MATIC) e Polygon (PET)
+ * @notice Gestisce conversioni automatiche e liquidity pooling cross-chain
+ */
+contract EthereumPolygonMultiTokenBridge is 
+    Initializable, 
+    AccessControlUpgradeable, 
+    ReentrancyGuardUpgradeable 
+{
+    using SafeERC20 for IERC20;
+    
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // 🔐 ROLES & CONSTANTS
+    // ═══════════════════════════════════════════════════════════════════════════════
+    
+    bytes32 public constant BRIDGE_OPERATOR = keccak256("BRIDGE_OPERATOR");
+    bytes32 public constant LIQUIDITY_MANAGER = keccak256("LIQUIDITY_MANAGER");
+    bytes32 public constant RATE_ORACLE = keccak256("RATE_ORACLE");
+    bytes32 public constant EMERGENCY_ROLE = keccak256("EMERGENCY_ROLE");
+    
+    uint256 public constant ETHEREUM_CHAIN_ID = 1;
+    uint256 public constant POLYGON_CHAIN_ID = 137;
+    uint256 public constant RATE_PRECISION = 1e18;
+    uint256 public constant MAX_SLIPPAGE = 500; // 5% max slippage
+    
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // 📊 TOKEN CONFIGURATION
+    // ═══════════════════════════════════════════════════════════════════════════════
+    
+    struct TokenConfig {
+        address tokenAddress;
+        uint256 chainId;
+        uint8 decimals;
+        uint256 conversionRate;  // Rate to SLDY (scaled by RATE_PRECISION)
+        uint256 liquidityPool;   // Available liquidity
+        uint256 dailyVolume;     // 24h trading volume
+        bool isActive;
+        string symbol;
+    }
+    
+    // Token configurations
+    TokenConfig public POL_CONFIG;    // POL su Ethereum
+    TokenConfig public MATIC_CONFIG;  // MATIC legacy su Ethereum  
+    TokenConfig public PET_CONFIG;    // Polygon Ecosystem Token
+    TokenConfig public SLDY_CONFIG;   // Solidary Token (base)
+    
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // 💧 LIQUIDITY MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════════════════
+    
+    struct LiquidityPool {
+        uint256 tokenReserves;
+        uint256 sldyReserves;
+        uint256 totalShares;
+        uint256 lastUpdate;
+        mapping(address => uint256) userShares;
+    }
+    
+    mapping(string => LiquidityPool) public liquidityPools;
+    string[] public poolNames;
+    
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // 🔄 BRIDGE STATE
+    // ═══════════════════════════════════════════════════════════════════════════════
+    
+    struct CrossChainSwap {
+        bytes32 swapId;
+        address user;
+        address sourceToken;
+        address targetToken;
+        uint256 sourceAmount;
+        uint256 targetAmount;
+        uint256 sourceChainId;
+        uint256 targetChainId;
+        uint256 timestamp;
+        bool completed;
+        bytes signature;
+    }
+    
+    mapping(bytes32 => CrossChainSwap) public crossChainSwaps;
+    mapping(address => uint256) public userNonces;
+    
+    // Contract references
+    address public solidaryHub;
+    address public reputationManager;
+    address public impactLogger;
+    
+    // Bridge statistics
+    uint256 public totalBridgeVolume;
+    uint256 public totalSwaps;
+    uint256 public totalLiquidityProviders;
+    bool public bridgeActive;
+    bool public emergencyPause;
+    
+    // Events
+    event TokenConfigured(string indexed symbol, address tokenAddress, uint256 chainId);
+    event LiquidityAdded(string indexed pool, address indexed provider, uint256 amount);
+    event LiquidityRemoved(string indexed pool, address indexed provider, uint256 amount);
+    event CrossChainSwapInitiated(bytes32 indexed swapId, address indexed user, address sourceToken, address targetToken);
+    event CrossChainSwapCompleted(bytes32 indexed swapId, uint256 sourceAmount, uint256 targetAmount);
+    event ConversionRateUpdated(string indexed symbol, uint256 oldRate, uint256 newRate);
+    
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // 🏗️ INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════════════════════
+    
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+    
+    function initialize(
+        address admin,
+        address _solidaryHub,
+        address _reputationManager,
+        address _impactLogger,
+        address polToken,
+        address maticToken,
+        address petToken,
+        address sldyToken
+    ) public initializer {
+        __AccessControl_init();
+        __ReentrancyGuard_init();
+        
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
+        _grantRole(BRIDGE_OPERATOR, admin);
+        _grantRole(LIQUIDITY_MANAGER, admin);
+        _grantRole(RATE_ORACLE, admin);
+        _grantRole(EMERGENCY_ROLE, admin);
+        
+        solidaryHub = _solidaryHub;
+        reputationManager = _reputationManager;
+        impactLogger = _impactLogger;
+        
+        // Configure tokens
+        _configureToken("POL", polToken, ETHEREUM_CHAIN_ID, 18, 50 * RATE_PRECISION); // 1 POL = 50 SLDY
+        _configureToken("MATIC", maticToken, ETHEREUM_CHAIN_ID, 18, 40 * RATE_PRECISION); // 1 MATIC = 40 SLDY
+        _configureToken("PET", petToken, POLYGON_CHAIN_ID, 18, 30 * RATE_PRECISION); // 1 PET = 30 SLDY  
+        _configureToken("SLDY", sldyToken, 0, 18, RATE_PRECISION); // Base token
+        
+        bridgeActive = true;
+        emergencyPause = false;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // ⚙️ TOKEN CONFIGURATION
+    // ═══════════════════════════════════════════════════════════════════════════════
+    
+    function _configureToken(
+        string memory symbol,
+        address tokenAddress,
+        uint256 chainId,
+        uint8 decimals,
+        uint256 conversionRate
+    ) internal {
+        TokenConfig memory config = TokenConfig({
+            tokenAddress: tokenAddress,
+            chainId: chainId,
+            decimals: decimals,
+            conversionRate: conversionRate,
+            liquidityPool: 0,
+            dailyVolume: 0,
+            isActive: true,
+            symbol: symbol
+        });
+        
+        if (keccak256(bytes(symbol)) == keccak256("POL")) {
+            POL_CONFIG = config;
+        } else if (keccak256(bytes(symbol)) == keccak256("MATIC")) {
+            MATIC_CONFIG = config;
+        } else if (keccak256(bytes(symbol)) == keccak256("PET")) {
+            PET_CONFIG = config;
+        } else if (keccak256(bytes(symbol)) == keccak256("SLDY")) {
+            SLDY_CONFIG = config;
+        }
+        
+        emit TokenConfigured(symbol, tokenAddress, chainId);
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // 💰 PAYMENT PROCESSING
+    // ═══════════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * @dev Processa pagamento in POL (Ethereum Native)
+     * @param amount Quantità POL da pagare
+     * @param recipient Destinatario del pagamento in SLDY
+     */
+    function payWithPOL(uint256 amount, address recipient) 
+        external 
+        nonReentrant 
+        onlyWhenActive 
+    {
+        require(amount > 0, "Amount must be positive");
+        require(recipient != address(0), "Invalid recipient");
+        
+        IERC20(POL_CONFIG.tokenAddress).safeTransferFrom(msg.sender, address(this), amount);
+        
+        uint256 sldyAmount = convertToSLDY(amount, POL_CONFIG.conversionRate, POL_CONFIG.decimals);
+        
+        _executeSLDYTransfer(recipient, sldyAmount);
+        _logPaymentImpact("POL_Payment", amount, sldyAmount);
+        
+        totalBridgeVolume += sldyAmount;
+    }
+    
+    /**
+     * @dev Processa pagamento in MATIC (Legacy Support)
+     * @param amount Quantità MATIC da pagare
+     * @param recipient Destinatario del pagamento
+     */
+    function payWithMATIC(uint256 amount, address recipient) 
+        external 
+        nonReentrant 
+        onlyWhenActive 
+    {
+        require(amount > 0, "Amount must be positive");
+        require(recipient != address(0), "Invalid recipient");
+        
+        IERC20(MATIC_CONFIG.tokenAddress).safeTransferFrom(msg.sender, address(this), amount);
+        
+        uint256 sldyAmount = convertToSLDY(amount, MATIC_CONFIG.conversionRate, MATIC_CONFIG.decimals);
+        
+        _executeSLDYTransfer(recipient, sldyAmount);
+        _logPaymentImpact("MATIC_Payment", amount, sldyAmount);
+        
+        totalBridgeVolume += sldyAmount;
+    }
+    
+    /**
+     * @dev Processa pagamento in PET (Polygon Ecosystem Token)
+     * @param amount Quantità PET da pagare
+     * @param recipient Destinatario del pagamento
+     */
+    function payWithPET(uint256 amount, address recipient) 
+        external 
+        nonReentrant 
+        onlyWhenActive 
+    {
+        require(amount > 0, "Amount must be positive");
+        require(recipient != address(0), "Invalid recipient");
+        require(block.chainid == POLYGON_CHAIN_ID, "PET only on Polygon");
+        
+        IERC20(PET_CONFIG.tokenAddress).safeTransferFrom(msg.sender, address(this), amount);
+        
+        uint256 sldyAmount = convertToSLDY(amount, PET_CONFIG.conversionRate, PET_CONFIG.decimals);
+        
+        _executeSLDYTransfer(recipient, sldyAmount);
+        _logPaymentImpact("PET_Payment", amount, sldyAmount);
+        
+        totalBridgeVolume += sldyAmount;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // 🔄 CROSS-CHAIN SWAPPING
+    // ═══════════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * @dev Inizia uno swap cross-chain
+     * @param sourceToken Token di origine  
+     * @param targetToken Token di destinazione
+     * @param amount Quantità da swappare
+     * @param targetChainId Chain di destinazione
+     */
+    function initiateCrossChainSwap(
+        address sourceToken,
+        address targetToken,
+        uint256 amount,
+        uint256 targetChainId
+    ) external nonReentrant onlyWhenActive returns (bytes32) {
+        require(amount > 0, "Amount must be positive");
+        
+        bytes32 swapId = keccak256(abi.encodePacked(
+            msg.sender,
+            sourceToken,
+            targetToken,
+            amount,
+            block.timestamp,
+            userNonces[msg.sender]++
+        ));
+        
+        IERC20(sourceToken).safeTransferFrom(msg.sender, address(this), amount);
+        
+        uint256 targetAmount = _calculateSwapAmount(sourceToken, targetToken, amount);
+        
+        crossChainSwaps[swapId] = CrossChainSwap({
+            swapId: swapId,
+            user: msg.sender,
+            sourceToken: sourceToken,
+            targetToken: targetToken,
+            sourceAmount: amount,
+            targetAmount: targetAmount,
+            sourceChainId: block.chainid,
+            targetChainId: targetChainId,
+            timestamp: block.timestamp,
+            completed: false,
+            signature: ""
+        });
+        
+        totalSwaps++;
+        
+        emit CrossChainSwapInitiated(swapId, msg.sender, sourceToken, targetToken);
+        return swapId;
+    }
+    
+    /**
+     * @dev Completa uno swap cross-chain
+     * @param swapId ID dello swap da completare
+     * @param signature Firma del bridge operator
+     */
+    function completeCrossChainSwap(bytes32 swapId, bytes memory signature) 
+        external 
+        onlyRole(BRIDGE_OPERATOR) 
+    {
+        CrossChainSwap storage swap = crossChainSwaps[swapId];
+        require(!swap.completed, "Swap already completed");
+        require(swap.user != address(0), "Swap not found");
+        
+        swap.completed = true;
+        swap.signature = signature;
+        
+        // Trasferisci token di destinazione
+        IERC20(swap.targetToken).safeTransfer(swap.user, swap.targetAmount);
+        
+        emit CrossChainSwapCompleted(swapId, swap.sourceAmount, swap.targetAmount);
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // 💧 LIQUIDITY MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * @dev Aggiunge liquidità a un pool
+     * @param poolName Nome del pool (es. "POL-SLDY")
+     * @param tokenAmount Quantità del token
+     * @param sldyAmount Quantità di SLDY
+     */
+    function addLiquidity(
+        string memory poolName,
+        uint256 tokenAmount,
+        uint256 sldyAmount
+    ) external nonReentrant {
+        require(tokenAmount > 0 && sldyAmount > 0, "Amounts must be positive");
+        
+        LiquidityPool storage pool = liquidityPools[poolName];
+        
+        // Se è il primo provider, inizializza il pool
+        if (pool.totalShares == 0) {
+            pool.tokenReserves = tokenAmount;
+            pool.sldyReserves = sldyAmount;
+            pool.totalShares = sqrt(tokenAmount * sldyAmount);
+            pool.userShares[msg.sender] = pool.totalShares;
+            totalLiquidityProviders++;
+        } else {
+            // Calcola shares proporzionali
+            uint256 tokenShare = (tokenAmount * pool.totalShares) / pool.tokenReserves;
+            uint256 sldyShare = (sldyAmount * pool.totalShares) / pool.sldyReserves;
+            uint256 shares = (tokenShare < sldyShare) ? tokenShare : sldyShare;
+            
+            pool.tokenReserves += tokenAmount;
+            pool.sldyReserves += sldyAmount;
+            pool.totalShares += shares;
+            pool.userShares[msg.sender] += shares;
+        }
+        
+        pool.lastUpdate = block.timestamp;
+        
+        emit LiquidityAdded(poolName, msg.sender, tokenAmount);
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // 🔧 UTILITY FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════════════════════
+    
+    function convertToSLDY(uint256 amount, uint256 rate, uint8 decimals) 
+        public 
+        pure 
+        returns (uint256) 
+    {
+        return (amount * rate) / (10 ** decimals);
+    }
+    
+    function _calculateSwapAmount(address sourceToken, address targetToken, uint256 amount) 
+    ) internal pure returns (uint256) {
+        internal 
+        view 
+        returns (uint256) 
+    {
+        // Placeholder per calcolo complesso con slippage
+        // In produzione: utilizzare curve AMM o oracle pricing
+        return (amount * 95) / 100; // 5% slippage simulato
+    }
+    
+    function _executeSLDYTransfer(address recipient, uint256 amount) internal {
+        (bool success, ) = SLDY_CONFIG.tokenAddress.call(
+            abi.encodeWithSignature("mint(address,uint256)", recipient, amount)
+        );
+        require(success, "SLDY transfer failed");
+    }
+    
+    function _logPaymentImpact(string memory category, uint256 originalAmount, uint256 sldyAmount) internal {
+        (bool success, ) = impactLogger.call(
+            abi.encodeWithSignature(
+                "logImpact(string,string,uint256)",
+                category,
+                "Cross-chain payment processed",
+                sldyAmount
+            )
+        );
+        // Non revert se il log fallisce
+    }
+    
+    function sqrt(uint256 x) internal pure returns (uint256) {
+        if (x == 0) return 0;
+        uint256 z = (x + 1) / 2;
+        uint256 y = x;
+        while (z < y) {
+            y = z;
+            z = (x / z + z) / 2;
+        }
+        return y;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // 👁️ VIEW FUNCTIONS  
+    // ═══════════════════════════════════════════════════════════════════════════════
+    
+    function getTokenConfig(string memory symbol) external view returns (TokenConfig memory) {
+        if (keccak256(bytes(symbol)) == keccak256("POL")) return POL_CONFIG;
+        if (keccak256(bytes(symbol)) == keccak256("MATIC")) return MATIC_CONFIG;
+        if (keccak256(bytes(symbol)) == keccak256("PET")) return PET_CONFIG;
+        if (keccak256(bytes(symbol)) == keccak256("SLDY")) return SLDY_CONFIG;
+        revert("Token not configured");
+    }
+    
+    function getBridgeStats() external view returns (
+        uint256 volume,
+        uint256 swaps,
+        uint256 providers,
+        bool active
+    ) {
+        return (totalBridgeVolume, totalSwaps, totalLiquidityProviders, bridgeActive);
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // 🛡️ MODIFIERS & ADMIN
+    // ═══════════════════════════════════════════════════════════════════════════════
+    
+    modifier onlyWhenActive() {
+        require(bridgeActive && !emergencyPause, "Bridge not active");
+        _;
+    }
+    
+    function setBridgeStatus(bool active) external onlyRole(BRIDGE_OPERATOR) {
+        bridgeActive = active;
+    }
+    
+    function setEmergencyPause(bool pause) external onlyRole(EMERGENCY_ROLE) {
+        emergencyPause = pause;
+    }
+    
+    function updateConversionRate(string memory symbol, uint256 newRate) 
+        external 
+        onlyRole(RATE_ORACLE) 
+    {
+        require(newRate > 0, "Rate must be positive");
+        
+        uint256 oldRate;
+        if (keccak256(bytes(symbol)) == keccak256("POL")) {
+            oldRate = POL_CONFIG.conversionRate;
+            POL_CONFIG.conversionRate = newRate;
+        } else if (keccak256(bytes(symbol)) == keccak256("MATIC")) {
+            oldRate = MATIC_CONFIG.conversionRate;
+            MATIC_CONFIG.conversionRate = newRate;
+        } else if (keccak256(bytes(symbol)) == keccak256("PET")) {
+            oldRate = PET_CONFIG.conversionRate;
+            PET_CONFIG.conversionRate = newRate;
+        } else {
+            revert("Token not supported");
+        }
+        
+        emit ConversionRateUpdated(symbol, oldRate, newRate);
+    }
+}

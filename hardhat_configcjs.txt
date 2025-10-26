@@ -1,0 +1,45 @@
+require("@nomicfoundation/hardhat-toolbox");
+require("@openzeppelin/hardhat-upgrades");
+require("dotenv").config();
+
+/** @type import('hardhat/config').HardhatUserConfig */
+module.exports = {
+  solidity: {
+    version: "0.8.29",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      },
+      viaIR: true,  // 🔥 SOLUZIONE PER STACK TOO DEEP
+    }
+  },
+  networks: {
+    base: {
+      url: process.env.BASE_RPC_URL || "https://mainnet.base.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      gas: 10000000,
+      gasPrice: 2000000000,
+    },
+    base_sepolia: {
+      url: process.env.BASE_SEPOLIA_RPC || "https://sepolia.base.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      gas: 10000000,
+      gasPrice: 2000000000,
+    },
+    hardhat: {
+      chainId: 31337,
+      allowUnlimitedContractSize: true
+    }
+  },
+  etherscan: {
+    apiKey: {
+      base: process.env.BASESCAN_API_KEY || "API_KEY",
+      baseSepolia: process.env.BASESCAN_API_KEY || "API_KEY"
+    }
+  },
+  gasReporter: {
+    enabled: process.env.REPORT_GAS !== undefined,
+    currency: "USD",
+  },
+};

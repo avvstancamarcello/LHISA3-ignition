@@ -1,0 +1,60 @@
+5) Bozza backend Node.js / Express (Heroku) — flusso consigliato
+
+Concetti:
+
+Backend custodisce le API keys (PINATA / NFT.Storage) come variabili d’ambiente su Heroku.
+
+Backend riceve la richiesta (es. webhook o processo pianificato) per generare snapshot: può chiamare il contratto createSnapshot con un account che ha il ruolo SNAPSHOT_CREATOR_ROLE (firma dal backend con una chiave privata custodita su Heroku, o meglio, mantieni solo l’azione di upload e lascia che il multisig/admin esegua la transazione).
+
+Dopo che il contratto ritorna l’id di snapshot (o hai già un snapshot simulato on-chain), il backend costruisce i file/JSON, li carica a NFT.Storage (o Pinata), riceve il CID, e chiama registerExternalCID(snapshotId, realCid) usando un account admin (privata) o tramite una transazione firmata da un multisig.
+
+Esempio minimale usando nft.storage (ricorda di npm install nft.storage ethers dotenv express):
+
+server.js:
+
+require('dotenv').config();
+const express = require('express');
+const { NFTStorage, File } = require('nft.storage');
+const { ethers } = require('ethers');
+const fs = require('fs');
+
+const app = express();
+app.use(express.json());
+
+const NFT_STORAGE_KEY = process.env.NFT_STORAGE_KEY; // impostare su Heroku config vars
+const ADMIN_PRIVATE_KEY = process.env.ADMIN_PRIVATE_KEY; // account admin (meglio: multisig)
+const RPC_URL = process.env.RPC_URL;
+const METRICS_ADDRESS = process.env.METRICS_ADDRESS;
+const METRICS_ABI = require('./abis/SolidaryMetrics.json'); // ABI del contratto compilato
+
+const client = new NFTStorage({ token: NFT_STORAGE_KEY });
+const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+const wallet = new ethers.Wallet(ADMIN_PRIVATE_KEY, provider);
+const metrics = new ethers.Contract(METRICS_ADDRESS, METRICS_ABI, wallet);
+
+// Endpoint: upload snapshot data and register CID
+app.post('/upload-snapshot', async (req, res) => {
+  try {
+    // corpo: { snapshotId, fileData } oppure server può costruire i dati leggendo on-chain
+    const { snapshotId, content } = req.body;
+    // content: string / JSON to persist
+    const blob = new File([Buffer.from(content)], `snapshot-${snapshotId}.json`, { type: 'application/json' });
+    const cid = await client.storeDirectory([blob]); // o client.store({name, description, image...})
+    // storeDirectory returns CID root; you may use client.store for metadata object
+    // Example CID string
+    const cidStr = `ipfs://${cid}`;
+
+    // Call registerExternalCID on-chain
+    const tx = await metrics.registerExternalCID(snapshotId, cidStr);
+    await tx.wait();
+
+    return res.json({ ok: true, cid: cidStr, tx: tx.hash });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ ok: false, error: err.toString() });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Server running on port", PORT));
+

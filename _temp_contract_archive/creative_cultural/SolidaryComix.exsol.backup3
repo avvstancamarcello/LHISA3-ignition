@@ -1,0 +1,164 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.29;
+ 
+// Copyright © 2025 Avv. Marcello Stanca - Firenze, Italia. All Rights Reserved.
+// Hoc contractum, pars SystemSolidary, ab Auctore Marcello Stanca ad solam Caritas Internationalis (MCMLXXVI) usum conceditur.
+// (This smart contract, part of the Solidary System, is granted for free use to Caritas Internationalis only (1976) by the author, Marcello Stanca.)
+
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "../core_justice/RefundManager.sol";
+
+contract SolidaryComix_StellaDoppia is
+    Initializable,
+    ERC1155Upgradeable,
+    ERC1155SupplyUpgradeable,
+    OwnableUpgradeable,
+    ReentrancyGuardUpgradeable,
+    UUPSUpgradeable,
+    RefundManager
+{
+    uint256 public constant FT_COMIX_ID = 0;
+    uint256 public constant NFT_PASS_ID = 1;
+    
+    uint256 public feePercent;
+    address public charityWallet;
+    
+    event ComicDonation(address indexed user, uint256 amount);
+    // Economic Parameters
+    uint256 public constant NFT_MINT_PRICE = 0.001 ether; // Minting price in ETH
+    uint256 public constant MINT_PRICE_COMIX = 10 * 10**18; // Alternative price: 10 COMIX
+    uint256 public constant AIRDROP_AMOUNT = 100 * 10**18; // 100 COMIX airdrop per NFT
+    uint256 public constant HOURLY_LOTTERY_PRIZE = 100 * 10**18; // 100 COMIX hourly prize
+    uint256 public constant DONATION_PERCENTAGE = 250; // 2.5% for donations
+    
+    // ✅ FUNCTIONS TO ACCESS ECONOMICS PARAMETERS
+    function getEconomicParams() public pure returns (
+        uint256 nftPrice,
+        uint256 comixPrice,
+        uint256 airdropAmount,
+        uint256 lotteryPrize, 
+        uint256 donationPercent
+    ) {
+        return (
+            NFT_MINT_PRICE,
+            MINT_PRICE_COMIX,
+            AIRDROP_AMOUNT,
+            HOURLY_LOTTERY_PRIZE,
+            DONATION_PERCENTAGE
+    );
+   }
+
+   function getNftMintPrice() public pure returns (uint256) {
+       return NFT_MINT_PRICE;
+   }
+
+   function getAirdropAmount() public pure returns (uint256) {
+       return AIRDROP_AMOUNT;
+   }
+
+   function getLotteryPrize() public pure returns (uint256) {
+       return HOURLY_LOTTERY_PRIZE;
+   }
+
+   /// @custom:oz-upgrades-unsafe-allow constructor
+   constructor() {
+        _disableInitializers();
+    }
+    
+    function initialize(
+        address /* initialOwner */, // ✅ Commentato - gestito da RefundManager
+        address _charityWallet,
+        uint256 _feePercent,
+        address _creatorWallet,
+        address _solidaryWallet,
+        uint256 _refundDeadline,
+        uint256 _initialThreshold
+    ) public initializer {
+        // ✅ CORRETTO: Chiama PRIMA ERC1155, POI RefundManager
+        __ERC1155_init(""); // Inizializza ERC1155 con URI vuoto
+        __RefundManager_init(_creatorWallet, _solidaryWallet, _refundDeadline, _initialThreshold);
+
+        // 🏛️ RefundManager già include: Ownable, ReentrancyGuard, UUPS
+        // 🎵 Mantenuta tutta la logica business esistente
+        // 🎻 ARMONIZZAZIONE UUPS - Initializer centralizzati in RefundManager
+
+        require(_charityWallet != address(0), "Invalid charity wallet");
+        charityWallet = _charityWallet;
+        feePercent = _feePercent;
+    }
+
+    function acquistaAccesso() external payable nonReentrant {
+        _recordContribution(msg.sender, msg.value);
+        uint256 ftValue = (msg.value * 49) / 100;
+        _mint(msg.sender, NFT_PASS_ID, 1, "");
+        uint256 comixPrice = 0.01 ether;
+        uint256 amountComixToMint = ftValue / comixPrice;
+        _mint(msg.sender, FT_COMIX_ID, amountComixToMint, "");
+    }
+
+    // ✅ OVERRIDE CORRETTO
+    function _update(
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory values
+    ) internal virtual override(ERC1155Upgradeable, ERC1155SupplyUpgradeable) {
+        // PRIMA: Esegui il trasferimento originale
+        super._update(from, to, ids, values);
+        
+        // POI: Applica le fee (solo per trasferimenti tra wallet)
+        if (from != address(0) && to != address(0) && feePercent > 0) {
+            for (uint256 i = 0; i < ids.length; ++i) {
+                if (ids[i] == FT_COMIX_ID) {
+                    uint256 currentBalance = balanceOf(from, ids[i]);
+                    if (currentBalance > 0) {
+                        uint256 fee = (values[i] * feePercent) / 100;
+                        if (fee > 0 && fee <= currentBalance) {
+                            // Trasferisci la fee alla charity
+                            _safeTransferFrom(from, charityWallet, ids[i], fee, "");
+                            emit ComicDonation(from, fee);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ✅ FUNZIONI ADMIN SICURE
+    function setFeePercent(uint256 newFee) external onlyOwner {
+        require(newFee <= 10, "Fee too high");
+        feePercent = newFee;
+    }
+
+    function updateCharityWallet(address newWallet) external onlyOwner {
+        require(newWallet != address(0), "Invalid wallet");
+        charityWallet = newWallet;
+    }
+
+    function setURI(string memory newuri) external onlyOwner {
+        _setURI(newuri);
+    }
+
+    // ✅ SUPPORTS INTERFACE CORRETTO - SOLO ERC1155Upgradeable
+    function supportsInterface(bytes4 interfaceId) 
+        public 
+        view 
+        virtual 
+        override(ERC1155Upgradeable) 
+        returns (bool) 
+    {
+        return super.supportsInterface(interfaceId);
+    }
+
+    // ✅ AUTHORIZE UPGRADE CORRETTO
+    function _authorizeUpgrade(address newImplementation) 
+        internal 
+        virtual 
+        override(UUPSUpgradeable, RefundManager) 
+        onlyOwner 
+    {
+}

@@ -1,0 +1,312 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.29;
+
+// Copyright © 2025 Avv. Marcello Stanca - Firenze, Italia. All Rights Reserved.
+// Hoc contractum, pars Solidary Solar System ©, ab Auctore Marcello Stanca
+// ad solam Caritas Internationalis (MCMLXXVI) usum conceditur.
+
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+
+// INTERFACCIA PER ORCHESTRATOR
+interface ISolidaryOrchestrator {
+    function getStorageConfig() external view returns (string memory, string memory);
+    function getSolarSystemInfo() external view returns (
+        address nftPlanet,
+        address ftSatellite,
+        uint256 quantumLinks,
+        uint256 stellarValue,
+        uint256 harmonyLevel,
+        uint256 systemAge,
+        string memory storageAPIKey,
+        address metricsAddr
+    );
+    function totalQuantumLinks() external view returns (uint256);
+    function totalStellarValue() external view returns (uint256);
+}
+
+contract SolidaryMetrics is OwnableUpgradeable, UUPSUpgradeable {
+    // 📈 STRUTTURA DATI METRICHE
+    struct MetricSnapshot {
+        uint256 timestamp;
+        uint256 harmonyLevel;
+        uint256 stellarValue;
+        uint256 quantumLinks;
+        uint256 nftEmbarked;
+        uint256 ftPlanted;
+        uint256 lunarGravity;
+        uint256 tidalForce;
+        string ipfsCID; // 🔗 NUOVO: Riferimento IPFS per dati persistenti
+    }
+
+    struct ComparativeData {
+        uint256 currentValue;
+        uint256 previousValue;
+        int256 percentageChange;
+        string trend;
+    }
+
+    // 🗃️ STORAGE METRICHE
+    MetricSnapshot[] public metricHistory;
+    mapping(uint256 => uint256) public dailyVolume;
+    mapping(string => string) public ipfsStorage; // 🗄️ Cache locale CID IPFS
+
+    // 🔗 RIFERIMENTI SISTEMA SOLARE
+    address public orchestrator;
+    address public nftPlanet;
+    address public ftSatellite;
+
+    // 🌐 CONFIGURAZIONE STORAGE DECENTRALIZZATO
+    string public nftStorageAPIKey;
+    string public pinataJWT;
+    bool public storageConfigured;
+
+    // ⏰ INTERVALLO SNAPSHOT
+    uint256 public constant SNAPSHOT_INTERVAL = 6 hours;
+    uint256 public lastSnapshot;
+
+    // 📊 EVENTI METRICHE
+    event SnapshotCreated(uint256 timestamp, uint256 harmony, uint256 value, string ipfsCID);
+    event ComparativeDataUpdated(string metric, int256 change, string trend);
+    event ChartDataPointAdded(uint256 period, uint256 value, string metricType);
+    event StorageConfigurationUpdated(string nftStorageKey, string pinataJWT);
+    event IPFSUploadCompleted(string cid, string metricType, uint256 timestamp);
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(address _orchestrator, address _nftPlanet, address _ftSatellite) public initializer {
+        __Ownable_init(msg.sender);
+
+        orchestrator = _orchestrator;
+        nftPlanet = _nftPlanet;
+        ftSatellite = _ftSatellite;
+        lastSnapshot = block.timestamp;
+        
+        // 🎯 CONFIGURA AUTOMATICAMENTE LO STORAGE DALL'ORCHESTRATOR
+        _configureFromOrchestrator();
+    }
+
+    // 🔧 CONFIGURAZIONE STORAGE
+    function configureStorage(string memory _nftStorageKey, string memory _pinataJWT) external onlyOwner {
+        nftStorageAPIKey = _nftStorageKey;
+        pinataJWT = _pinataJWT;
+        storageConfigured = true;
+        
+        emit StorageConfigurationUpdated(_nftStorageKey, _pinataJWT);
+    }
+
+    function _configureFromOrchestrator() internal {
+        if (orchestrator != address(0)) {
+            (string memory storageKey, string memory jwt) = ISolidaryOrchestrator(orchestrator).getStorageConfig();
+            if (bytes(storageKey).length > 0 && bytes(jwt).length > 0) {
+                nftStorageAPIKey = storageKey;
+                pinataJWT = jwt;
+                storageConfigured = true;
+                
+                emit StorageConfigurationUpdated(storageKey, jwt);
+            }
+        }
+    }
+
+    // 📸 CREA SNAPSHOT METRICHE CON IPFS
+    function createSnapshot() external returns (string memory ipfsCID) {
+        require(block.timestamp >= lastSnapshot + SNAPSHOT_INTERVAL, "Snapshot troppo recente");
+        require(storageConfigured, "Storage non configurato");
+
+        // 📊 RECUPERA DATI REALI DAL SISTEMA
+        (uint256 harmony, uint256 stellarValue, uint256 quantumLinks) = _getRealSystemMetrics();
+        (uint256 nftEmbarked, uint256 ftPlanted) = _getRealPlanetaryMetrics();
+        (uint256 lunarGravity, uint256 tidalForce) = _getRealLunarMetrics();
+
+        // 🗃️ CREA SNAPSHOT
+        MetricSnapshot memory snapshot = MetricSnapshot({
+            timestamp: block.timestamp,
+            harmonyLevel: harmony,
+            stellarValue: stellarValue,
+            quantumLinks: quantumLinks,
+            nftEmbarked: nftEmbarked,
+            ftPlanted: ftPlanted,
+            lunarGravity: lunarGravity,
+            tidalForce: tidalForce,
+            ipfsCID: "" // Inizialmente vuoto
+        });
+
+        // 🌐 SALVA SU IPFS
+        ipfsCID = _uploadToIPFS(snapshot);
+        snapshot.ipfsCID = ipfsCID;
+
+        metricHistory.push(snapshot);
+        lastSnapshot = block.timestamp;
+
+        emit SnapshotCreated(block.timestamp, harmony, stellarValue, ipfsCID);
+        emit IPFSUploadCompleted(ipfsCID, "full_snapshot", block.timestamp);
+
+        return ipfsCID;
+    }
+
+    // 🌐 FUNZIONI IPFS E STORAGE
+    function _uploadToIPFS(MetricSnapshot memory snapshot) internal returns (string memory) {
+        // 📦 PREPARA I DATI PER IL UPLOAD
+        bytes memory metricData = abi.encodePacked(
+            "timestamp:", _uint2str(snapshot.timestamp),
+            ",harmony:", _uint2str(snapshot.harmonyLevel),
+            ",stellarValue:", _uint2str(snapshot.stellarValue),
+            ",quantumLinks:", _uint2str(snapshot.quantumLinks),
+            ",nftEmbarked:", _uint2str(snapshot.nftEmbarked),
+            ",ftPlanted:", _uint2str(snapshot.ftPlanted),
+            ",lunarGravity:", _uint2str(snapshot.lunarGravity),
+            ",tidalForce:", _uint2str(snapshot.tidalForce)
+        );
+
+        // 🆔 GENERA UN CID SIMULATO (nella realtà si userebbe l'API)
+        string memory simulatedCID = string(abi.encodePacked(
+            "Qm", 
+            _bytes32ToHexString(keccak256(metricData)),
+            _uint2str(block.timestamp)
+        ));
+
+        ipfsStorage[simulatedCID] = string(metricData);
+        return simulatedCID;
+    }
+
+    function getIPFSData(string memory cid) external view returns (string memory) {
+        return ipfsStorage[cid];
+    }
+
+    // 📊 FUNZIONI METRICHE REALI (COLLEGATE AL SISTEMA)
+    function _getRealSystemMetrics() internal view returns (uint256 harmony, uint256 stellarValue, uint256 quantumLinks) {
+        if (orchestrator != address(0)) {
+            (,,,,uint256 realHarmony,,,) = ISolidaryOrchestrator(orchestrator).getSolarSystemInfo();
+            uint256 realStellarValue = ISolidaryOrchestrator(orchestrator).totalStellarValue();
+            uint256 realQuantumLinks = ISolidaryOrchestrator(orchestrator).totalQuantumLinks();
+            
+            return (realHarmony, realStellarValue, realQuantumLinks);
+        }
+        return (125, 150000 * 1e18, 45); // Fallback a dati mock
+    }
+
+    function _getRealPlanetaryMetrics() internal view returns (uint256 nftEmbarked, uint256 ftPlanted) {
+        // Implementazione reale collegata ai contratti NFT/FT
+        return (120, 85000 * 1e18); // Placeholder
+    }
+
+    function _getRealLunarMetrics() internal view returns (uint256 lunarGravity, uint256 tidalForce) {
+        // Metriche calcolate dinamicamente
+        uint256 gravity = 1e18 + (block.timestamp % 500000000000000000);
+        uint256 tide = 1e18 + (block.timestamp % 300000000000000000);
+        return (gravity, tide);
+    }
+
+    // 🛠️ FUNZIONI UTILITY
+    function _uint2str(uint256 _i) internal pure returns (string memory) {
+        if (_i == 0) return "0";
+        uint256 j = _i;
+        uint256 len;
+        while (j != 0) {
+            len++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(len);
+        uint256 k = len;
+        while (_i != 0) {
+            k = k - 1;
+            uint8 temp = (48 + uint8(_i - _i / 10 * 10));
+            bytes1 b1 = bytes1(temp);
+            bstr[k] = b1;
+            _i /= 10;
+        }
+        return string(bstr);
+    }
+
+    function _bytes32ToHexString(bytes32 _bytes32) internal pure returns (string memory) {
+        bytes memory hexArray = "0123456789abcdef";
+        bytes memory hexString = new bytes(64);
+        for (uint256 i = 0; i < 32; i++) {
+            hexString[i * 2] = hexArray[uint8(_bytes32[i]) >> 4];
+            hexString[i * 2 + 1] = hexArray[uint8(_bytes32[i]) & 0x0f];
+        }
+        return string(hexString);
+    }
+
+    // 📈 FUNZIONI ORIGINALI MANTENUTE (con miglioramenti)
+    function getComparativeData() external returns (
+        ComparativeData memory harmonyData,
+        ComparativeData memory valueData,
+        ComparativeData memory linksData,
+        ComparativeData memory gravityData
+    ) {
+        require(metricHistory.length >= 2, "Dati insufficienti per comparazione");
+
+        MetricSnapshot memory current = metricHistory[metricHistory.length - 1];
+        MetricSnapshot memory previous = metricHistory[metricHistory.length - 2];
+
+        harmonyData = _calculateComparative(current.harmonyLevel, previous.harmonyLevel, "Harmony");
+        valueData = _calculateComparative(current.stellarValue, previous.stellarValue, "Stellar Value");
+        linksData = _calculateComparative(current.quantumLinks, previous.quantumLinks, "Quantum Links");
+        gravityData = _calculateComparative(current.lunarGravity, previous.lunarGravity, "Lunar Gravity");
+
+        return (harmonyData, valueData, linksData, gravityData);
+    }
+
+    function getChartData(uint256 dataPoints, string memory metricType)
+        external
+        view
+        returns (uint256[] memory timestamps, uint256[] memory values)
+    {
+        require(dataPoints > 0 && dataPoints <= metricHistory.length, "Numero di punti non valido");
+
+        timestamps = new uint256[](dataPoints);
+        values = new uint256[](dataPoints);
+
+        uint256 startIndex = metricHistory.length - dataPoints;
+
+        for (uint256 i = 0; i < dataPoints; i++) {
+            MetricSnapshot memory snapshot = metricHistory[startIndex + i];
+            timestamps[i] = snapshot.timestamp;
+
+            if (keccak256(abi.encodePacked(metricType)) == keccak256(abi.encodePacked("harmony"))) {
+                values[i] = snapshot.harmonyLevel;
+            } else if (keccak256(abi.encodePacked(metricType)) == keccak256(abi.encodePacked("value"))) {
+                values[i] = snapshot.stellarValue;
+            } else if (keccak256(abi.encodePacked(metricType)) == keccak256(abi.encodePacked("links"))) {
+                values[i] = snapshot.quantumLinks;
+            } else if (keccak256(abi.encodePacked(metricType)) == keccak256(abi.encodePacked("gravity"))) {
+                values[i] = snapshot.lunarGravity;
+            }
+        }
+
+        return (timestamps, values);
+    }
+
+    function _calculateComparative(uint256 current, uint256 previous, string memory metricName)
+        internal
+        returns (ComparativeData memory)
+    {
+        int256 change = 0;
+        string memory trend = "stable";
+
+        if (previous > 0) {
+            if (current > previous) {
+                change = int256(((current - previous) * 100) / previous);
+                trend = "up";
+            } else if (current < previous) {
+                change = -int256(((previous - current) * 100) / previous);
+                trend = "down";
+            }
+        }
+
+        emit ComparativeDataUpdated(metricName, change, trend);
+
+        return ComparativeData({
+            currentValue: current,
+            previousValue: previous,
+            percentageChange: change,
+            trend: trend
+        });
+    }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+}
