@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.29;
 
+// © Copyright Marcello Stanca - Italy - Florence. Author and owner of the Solidary.it ecosystem and this smart contract. The ecosystem and its logical components (.sol files and scripts) are protected by copyright.
+
+
 // Questa libreria contiene le funzioni di utilità che non cambiano lo stato del contratto.
 library SolidaryIpfsUtils {
 
@@ -24,7 +27,6 @@ library SolidaryIpfsUtils {
         return string(s);
     }
     
-    // Funzione per la conversione da uint a stringa (il tuo _u)
     function _uint2str(uint256 x) internal pure returns (string memory) {
         if (x == 0) return "0";
         uint256 j = x; uint256 len;

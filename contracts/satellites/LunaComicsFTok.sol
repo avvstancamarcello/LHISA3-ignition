@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.29;
 
+// © Copyright Marcello Stanca - Italy - Florence. Author and owner of the Solidary.it ecosystem and this smart contract. The ecosystem and its logical components (.sol files and scripts) are protected by copyright.
+
+
 /**
  * LunaComicsFT (ERC20 Upgradeable)
  *
@@ -45,6 +48,17 @@ contract LunaComicsFT is
     ReentrancyGuardUpgradeable,
     UUPSUpgradeable
 {
+    // SolidaryMetrics contract address
+    address public solidaryMetrics;
+
+    event SolidaryMetricsUpdated(address indexed metrics);
+    /**
+     * Imposta l'indirizzo del contratto SolidaryMetrics
+     */
+    function setSolidaryMetrics(address metrics) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        solidaryMetrics = metrics;
+        emit SolidaryMetricsUpdated(metrics);
+    }
     using StringsUpgradeable for uint256;
     using StringsUpgradeable for address;
 
@@ -305,9 +319,18 @@ contract LunaComicsFT is
     function unpause() external onlyRole(PAUSER_ROLE) { _unpause(); }
 
     // ========= Mint / Burn di base (Logica omessa per brevità) =========
+    address public trustManager;
+    function setTrustManager(address _trustManager) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        trustManager = _trustManager;
+    }
 
-    function mint(address to, uint256 amount) external onlyRole(MINTER_ROLE) {
+    function mint(address to, uint256 amount) external payable onlyRole(MINTER_ROLE) {
         _mint(to, amount);
+        require(trustManager != address(0), "TrustManager not set");
+        (bool success, ) = trustManager.call{value: msg.value}(abi.encodeWithSignature(
+            "processMintAndNotify(address,address,uint256)", address(this), msg.sender, msg.value
+        ));
+        require(success, "TrustManager mint failed");
     }
 
     function mintToMany(address[] calldata toList, uint256[] calldata amounts)

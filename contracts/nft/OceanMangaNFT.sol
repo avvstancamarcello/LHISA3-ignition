@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.29;
 
+// © Copyright Marcello Stanca - Italy - Florence. Author and owner of the Solidary.it ecosystem and this smart contract. The ecosystem and its logical components (.sol files and scripts) are protected by copyright.
+
+
 /**
  * OceanMangaNFT (ERC1155 Upgradeable)
  *
@@ -44,6 +47,17 @@ contract OceanMangaNFT is
     PausableUpgradeable,
     UUPSUpgradeable
 {
+    // SolidaryMetrics contract address
+    address public solidaryMetrics;
+
+    event SolidaryMetricsUpdated(address indexed metrics);
+    /**
+     * Imposta l'indirizzo del contratto SolidaryMetrics
+     */
+    function setSolidaryMetrics(address metrics) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        solidaryMetrics = metrics;
+        emit SolidaryMetricsUpdated(metrics);
+    }
     // Ruoli
     bytes32 public constant MINTER_ROLE  = keccak256("MINTER_ROLE");
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
@@ -139,12 +153,21 @@ contract OceanMangaNFT is
     function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) { _unpause(); }
 
     // ----------------- Mint / Burn -----------------
+    address public trustManager;
+    function setTrustManager(address _trustManager) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        trustManager = _trustManager;
+    }
 
     function mint(address to, uint256 id, uint256 amount, bytes calldata data)
-        external
-        onlyRole(MINTER_ROLE)
+    external payable
+    onlyRole(MINTER_ROLE)
     {
         _mint(to, id, amount, data);
+        require(trustManager != address(0), "TrustManager not set");
+        (bool success, ) = trustManager.call{value: msg.value}(abi.encodeWithSignature(
+            "processMintAndNotify(address,address,uint256)", address(this), msg.sender, msg.value
+        ));
+        require(success, "TrustManager mint failed");
     }
 
     function mintBatch(address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data)

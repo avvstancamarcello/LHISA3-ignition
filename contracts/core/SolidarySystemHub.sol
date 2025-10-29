@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.29;
 
+// © Copyright Marcello Stanca - Italy - Florence. Author and owner of the Solidary.it ecosystem and this smart contract. The ecosystem and its logical components (.sol files and scripts) are protected by copyright.
+
+
 /**
- * @title EnhancedSolidaryHub (Rector Orbis - The Ruler of the World)
+ * @title SolidarySystem (Rector Orbis - The Ruler of the World)
  * @author
  * © 2025 Marcello Stanca - Lawyer, Firenze, Italy. All Rights Reserved.
  * @notice Core Hub del "Solidary System": registra/coordina moduli, storage pointers (no secrets on-chain),
@@ -12,17 +15,20 @@ pragma solidity ^0.8.29;
  * - UUPS + AccessControl + Pausable + ReentrancyGuard
  */
 
-// File: contracts/core/EnhancedSolidaryHub.sol
+// File: contracts/core/SolidarySystem.sol
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "../libraries/SolidaryIpfsUtils.sol"; // New Library
-import "../libraries/SolidaryModuleUtils.sol"; //New second Library
+import "../libraries/SolidaryIpfsUtils.sol";
+import "../libraries/SolidaryModuleUtils.sol"; // External library: link at deploy
+import "../libraries/SolidaryHubLogic.sol";
+import "../libraries/SolidaryHubUtils.sol";
+import "../libraries/SolidaryTokenRouter.sol"; // External library: link at deploy
 
-contract EnhancedSolidaryHub is
+contract SolidarySystemHub is
     Initializable,
     AccessControlUpgradeable,
     PausableUpgradeable,
@@ -47,16 +53,47 @@ contract EnhancedSolidaryHub is
     // ───────────────────────────────── Data structures ────────────────────────────
     
     struct EnhancedModuleInfo {
-        address contractAddress; string moduleName; uint8 layer; bool active; uint256 version; string moduleType; string ipfsCID; uint256 lastInteraction; uint256 successRate; uint256 totalInteractions; address[] dependencies; address[] dependents;
+        address contractAddress;
+        string moduleName;
+        uint8 layer;
+        bool active;
+        uint256 version;
+        string moduleType;
+        string ipfsCID;
+        uint256 lastInteraction;
+        uint256 successRate;
+        uint256 totalInteractions;
+        address[] dependencies;
+        address[] dependents;
     }
     struct EcosystemHealth {
-        uint256 overallScore; uint256 moduleHealth; uint256 crossChainHealth; uint256 reputationHealth; uint256 impactHealth; uint256 storageHealth; string healthCID; uint256 lastCheck;
+        uint256 overallScore;
+        uint256 moduleHealth;
+        uint256 crossChainHealth;
+        uint256 reputationHealth;
+        uint256 impactHealth;
+        uint256 storageHealth;
+        string healthCID;
+        uint256 lastCheck;
     }
     struct StorageConfiguration {
-        string nftStorageAPIKey; string pinataJWT; string ipfsBaseURI; bool storageEnabled; uint256 totalCIDsStored; string storageAnalyticsCID;
+        string nftStorageAPIKey;
+        string pinataJWT;
+        string ipfsBaseURI;
+        bool storageEnabled;
+        uint256 totalCIDsStored;
+        string storageAnalyticsCID;
     }
     struct EnhancedEcosystemState {
-        uint256 totalUsers; uint256 totalImpact; uint256 globalReputation; uint256 totalTransactions; uint256 crossChainVolume; uint256 carbonFootprint; uint256 totalValueLocked; bool emergencyMode; string stateCID;
+        uint256 totalUsers;
+        uint256 totalImpact;
+        uint256 globalReputation;
+        uint256 totalTransactions;
+        uint256 crossChainVolume;
+        uint256 carbonFootprint;
+        uint256 totalValueLocked;
+        bool emergencyMode;
+        string stateCID;
     }
 
     // ───────────────────────────────── State ──────────────────────────────────────
@@ -110,7 +147,7 @@ contract EnhancedSolidaryHub is
         ) = abi.decode(
             SolidaryModuleUtils.setInitialEcosystemStateLogic(),
             (uint256, uint256, uint256, uint256, uint256, uint256, uint256, bool, string)
-        );
+        ); // Funzione della libreria esterna, linkata
 
         // ✅ ASSEGNAZIONE DIRETTA DEI DUE STRUCT PICCOLI 
         ecosystemHealth = EcosystemHealth({
@@ -152,12 +189,22 @@ contract EnhancedSolidaryHub is
         if (moduleAddress == address(0)) return;
 
         modules[moduleAddress] = EnhancedModuleInfo({
-            contractAddress: moduleAddress, moduleName: moduleName, layer: layer, active: true, 
-            version: 1, moduleType: moduleType, ipfsCID: "", lastInteraction: block.timestamp, 
-            successRate: 100, totalInteractions: 0, dependencies: new address[](0), dependents: new address[](0)
+            contractAddress: moduleAddress,
+            moduleName: moduleName,
+            layer: layer,
+            active: true,
+            version: 1,
+            moduleType: moduleType,
+            ipfsCID: "",
+            lastInteraction: block.timestamp,
+            successRate: 100,
+            totalInteractions: 0,
+            dependencies: new address[](0),
+            dependents: new address[](0)
         });
 
-        modulesByLayer[layer].push(moduleAddress); moduleByName[moduleName] = moduleAddress; 
+        modulesByLayer[layer].push(moduleAddress);
+        moduleByName[moduleName] = moduleAddress;
         modulesByType[moduleType].push(moduleAddress);
 
         totalModuleRegistrations++;
@@ -168,23 +215,35 @@ contract EnhancedSolidaryHub is
         address contractAddress, string memory moduleName, uint8 layer, string memory moduleType,
         address[] memory dependencies, string memory metadata
     ) external onlyRole(MODULE_MANAGER) returns (string memory moduleCID) {
-        require(contractAddress != address(0), "Invalid contract"); require(layer >= 1 && layer <= 7, "Invalid layer"); 
+        require(contractAddress != address(0), "Invalid contract");
+        require(layer >= 1 && layer <= 7, "Invalid layer");
         require(modules[contractAddress].contractAddress == address(0), "Already registered");
 
-        moduleCID = _uploadToIPFS(bytes(metadata)); // ⬅️ Chiama il wrapper leggero IPFS
+        moduleCID = _uploadToIPFS(bytes(metadata));
 
         modules[contractAddress] = EnhancedModuleInfo({
-             contractAddress: contractAddress, moduleName: moduleName, layer: layer, active: true, version: 1, 
-             moduleType: moduleType, ipfsCID: moduleCID, lastInteraction: block.timestamp, successRate: 100, 
-             totalInteractions: 0, dependencies: dependencies, dependents: new address[](0)
+            contractAddress: contractAddress,
+            moduleName: moduleName,
+            layer: layer,
+            active: true,
+            version: 1,
+            moduleType: moduleType,
+            ipfsCID: moduleCID,
+            lastInteraction: block.timestamp,
+            successRate: 100,
+            totalInteractions: 0,
+            dependencies: dependencies,
+            dependents: new address[](0)
         });
 
         for (uint256 i = 0; i < dependencies.length; i++) {
             modules[dependencies[i]].dependents.push(contractAddress);
+            SolidarySystemHubLogic.addDependent(modules[dependencies[i]].dependents, contractAddress);
             emit ModuleDependencyAdded(contractAddress, dependencies[i]);
         }
 
-        modulesByLayer[layer].push(contractAddress); moduleByName[moduleName] = contractAddress; 
+        modulesByLayer[layer].push(contractAddress);
+        moduleByName[moduleName] = contractAddress;
         modulesByType[moduleType].push(contractAddress);
 
         totalModuleRegistrations++;
@@ -266,8 +325,8 @@ contract EnhancedSolidaryHub is
     
     // ───────────────────────────── View helpers ───────────────────────────────────
 
-    function _isModule(address account) internal view returns (bool) {
-        return modules[account].contractAddress != address(0);
+    function _isModule(address account) internal pure returns (bool) {
+        return SolidarySystemHubLogic.isValidModule(account);
     }
 
     function getEnhancedModuleInfo(address moduleAddress) external view returns (EnhancedModuleInfo memory) {
@@ -295,7 +354,11 @@ contract EnhancedSolidaryHub is
         return ecosystemState.emergencyMode || paused();
     }
     function calculateEcosystemHealthScore() external view returns (uint256) {
-        return ecosystemHealth.overallScore;
+        return SolidaryHubUtils.calculateEcosystemHealthScore(
+            ecosystemState.totalUsers,
+            ecosystemState.totalImpact,
+            ecosystemState.globalReputation
+        );
     }
     
     // ⚠️ WRAPPER LEGGERO CHE SOSTITUISCE LA LOGICA COSTOSA ORIGINALE
@@ -307,8 +370,8 @@ contract EnhancedSolidaryHub is
         // La logica complessa di calcolo (es. ciclo for) è stata spostata.
         return SolidaryModuleUtils.countActiveModulesLogic(
             totalModuleRegistrations,
-            0 // Per il momento, assumiamo 0 moduli inattivi nel calcolo leggero
-        );
+            0
+        ); // Funzione della libreria esterna, linkata
     }
 
     function getEcosystemStatistics() external view returns (
@@ -339,7 +402,7 @@ contract EnhancedSolidaryHub is
         _pause();
     }
 
-    function resolveEmergency(string memory resolutionNote) external onlyRole(EMERGENCY_ROLE) {
+    function resolveEmergency(string memory /*resolutionNote*/) external onlyRole(EMERGENCY_ROLE) {
         // La logica complessa è stata eliminata. Qui si resetta solo lo stato.
         ecosystemState.emergencyMode = false;
         _unpause();
@@ -356,4 +419,12 @@ contract EnhancedSolidaryHub is
         emit EcosystemHealthUpdated(ecosystemHealth.overallScore, ecosystemHealth.healthCID);
     }
 
+    function calculateEcosystemHealthScore(
+        uint256 totalUsers,
+        uint256 totalImpact,
+        uint256 globalReputation
+    ) internal pure returns (uint256) {
+        // Esempio di calcolo
+        return totalUsers + totalImpact + globalReputation;
+    }
 }

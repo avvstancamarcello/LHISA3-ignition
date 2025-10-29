@@ -3,24 +3,18 @@ pragma solidity ^0.8.29;
 
 // © Copyright Marcello Stanca - Italy - Florence. Author and owner of the Solidary.it ecosystem and this smart contract. The ecosystem and its logical components (.sol files and scripts) are protected by copyright.
 
-
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol"; // Per la formattazione dei dati
 
 /**
  * @title SolidaryTokenRouter
  * @author Avv. Marcello Stanca
- * @notice Libreria per la gestione della conversione e del routing di token (FT/NFT) verso valute esterne (USDC, DAI).
+ * @notice Contratto per la gestione della conversione e del routing di token (FT/NFT) verso valute esterne (USDC, DAI).
  * @dev Contiene la logica di calcolo per l'equipollenza senza accedere allo stato.
  */
-library SolidaryTokenRouter {
+contract SolidaryTokenRouter {
     using StringsUpgradeable for uint256;
 
-    // L'indirizzo del Router/Exchange reale (es. QuickSwap) sarà gestito dal Hub.
-    
-    // ───────────────────────────────── Costanti ──────────────────────────────────
     uint256 private constant BASIS_POINTS_DIVISOR = 10000;
-    
-    // ───────────────────────────────── Stella Doppia Logica ───────────────────────
     uint256 public constant FT_SHARE_BPS = 4500; // 45.00% in Basis Points (BPS)
     uint256 public constant NFT_SHARE_BPS = 5500; // 55.00% in Basis Points (BPS)
 
@@ -30,13 +24,11 @@ library SolidaryTokenRouter {
      * @return ftValue La porzione destinata al token FT (45%).
      * @return nftValue La porzione destinata al token NFT (55%).
      */
-    function calculateStellaDoppiaSplit(uint256 totalValue) internal pure returns (uint256 ftValue, uint256 nftValue) {
+    function calculateStellaDoppiaSplit(uint256 totalValue) public pure returns (uint256 ftValue, uint256 nftValue) {
         ftValue = (totalValue * FT_SHARE_BPS) / BASIS_POINTS_DIVISOR;
         nftValue = (totalValue * NFT_SHARE_BPS) / BASIS_POINTS_DIVISOR;
     }
 
-    // ───────────────────────────────── Calcolo Valore / Conversione ────────────────
-    
     /**
      * @notice Simula il calcolo del valore per una conversione (es. da LUNA a USDC).
      * @dev Questa è la logica centrale che definisce l'equipollenza.
@@ -44,7 +36,7 @@ library SolidaryTokenRouter {
      * @param rate La tariffa di conversione (es. 1e18 per un tasso di 1:1, 0.5e18 per un tasso di 1:0.5).
      * @return Il valore equivalente nella valuta target.
      */
-    function calculateConversionValue(uint256 amount, uint256 rate) internal pure returns (uint256) {
+    function calculateConversionValue(uint256 amount, uint256 rate) public pure returns (uint256) {
         return (amount * rate) / 1e18; 
     }
 }

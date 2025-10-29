@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.29;
 
+// © Copyright Marcello Stanca - Italy - Florence. Author and owner of the Solidary.it ecosystem and this smart contract. The ecosystem and its logical components (.sol files and scripts) are protected by copyright.
+
+
 /**
- * @title EnhancedOraculumCaritatis
+ * @title SolidarySystemOraculumCaritatis
  * @notice Sistema avanzato di verifica identità per aiuti umanitari:
  *         - registrazione enti verificatori (Caritas, ONG)
  *         - attestazione “BlessedSoul” con prove su IPFS (no dati sensibili on-chain)
@@ -23,7 +26,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 
-contract EnhancedOraculumCaritatis is
+contract SolidarySystemOraculumCaritatis is
     Initializable,
     AccessControlUpgradeable,
     PausableUpgradeable,
@@ -61,9 +64,9 @@ contract EnhancedOraculumCaritatis is
     mapping(string => address[]) public regionBlessedSouls;     // regione → elenco wallet
 
     // Riferimenti ecosistema
-    address public solidaryHub;              // EnhancedSolidaryHub
+    address public solidaryHub;              // SolidarySystemSolidarySystem
     address public impactLogger;             // opzionale
-    address public reputationManager;        // EnhancedReputationManager (opzionale)
+    address public reputationManager;        // SolidarySystemReputationManager (opzionale)
 
     // Statistiche
     uint256 public totalBlessedSouls;

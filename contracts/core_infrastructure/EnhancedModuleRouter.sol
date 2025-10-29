@@ -5,7 +5,7 @@
 // © Copyright Marcello Stanca, Firenze, Italia
 
 /**
- * @title EnhancedModuleRouter
+ * @title SolidarySystemModuleRouter
  * @dev Router avanzato per l'ecosistema Solidary con gestione intelligente dei moduli
  * @notice Coordina tutte le interazioni tra i contratti dell'ecosistema
  */
@@ -14,7 +14,7 @@
     // ⚠️ Import per la funzione call (non necessaria se si usa AddressUpgradeable, ma aggiunta per sicurezza)
     import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol"; 
     
-contract EnhancedModuleRouter is Initializable, AccessControlUpgradeable {
+contract SolidarySystemModuleRouter is Initializable, AccessControlUpgradeable {
     using AddressUpgradeable for address; // Per l'uso della funzione call
 
     bytes32 public constant ROUTER_ADMIN = keccak256("ROUTER_ADMIN");
