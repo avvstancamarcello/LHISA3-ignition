@@ -2,7 +2,7 @@
 pragma solidity ^0.8.29;
 
 /**
- * @title EnhancedSolidaryHub (Rector Orbis - The Ruler of the World)
+ * @title EnhancedSolidarySystem (Rector Orbis - The Ruler of the World)
  * @author
  *  © 2025 Marcello Stanca - Lawyer, Firenze, Italy. All Rights Reserved.
  * @notice Core Hub del "Solidary System": registra/coordina moduli, storage pointers (no secrets on-chain),
@@ -20,7 +20,7 @@ import "@openzeppelin/contracts-upgradeable/user/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/user/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-contract EnhancedSolidaryHub is
+contract EnhancedSolidarySystem is
     Initializable,
     AccessControlUpgradeable,
     PausableUpgradeable,

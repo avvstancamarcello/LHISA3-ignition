@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.29;
 
+// © Copyright Marcello Stanca - Italy - Florence. Author and owner of the Solidary.it ecosystem and this smart contract. The ecosystem and its logical components (.sol files and scripts) are protected by copyright.
+
 /**
  * SolidaryMetrics.sol
  *
@@ -36,8 +38,11 @@ interface ISolidaryOrchestrator {
 }
 
 contract SolidaryMetrics is Initializable, AccessControlUpgradeable, UUPSUpgradeable {
+    // ...existing code...
+    function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
     using StringsUpgradeable for uint256;
     using CountersUpgradeable for CountersUpgradeable.Counter;
+
 
     // Roles
     bytes32 public constant SNAPSHOT_CREATOR_ROLE = keccak256("SNAPSHOT_CREATOR_ROLE");
@@ -61,11 +66,31 @@ contract SolidaryMetrics is Initializable, AccessControlUpgradeable, UUPSUpgrade
     mapping(uint256 => Snapshot) private snapshots;
     uint256 public totalSnapshots;
 
+    // Charity aggregation
+    uint256 public totalCharityDonations;
+    event CharityDonationRegistered(address indexed from, uint256 amount, string reason);
+
     // Events
     event SnapshotCreated(uint256 indexed id, string cid, uint256 timestamp);
     event OrchestratorUpdated(address indexed orchestrator);
     event SnapshotIntervalUpdated(uint256 newInterval);
     event ExternalCIDRegistered(uint256 indexed id, string cid, address indexed registrar);
+    /**
+     * Funzione per notificare una donazione di beneficenza aggregata
+     * Da chiamare da altri smart contract dell'ecosistema
+     */
+    function registerCharityDonation(uint256 amount, string calldata reason) external {
+        require(amount > 0, "Importo nullo");
+        totalCharityDonations += amount;
+        emit CharityDonationRegistered(msg.sender, amount, reason);
+    }
+
+    /**
+     * Funzione di lettura per frontend/banner
+     */
+    function getTotalCharityDonations() external view returns (uint256) {
+        return totalCharityDonations;
+    }
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -101,6 +126,13 @@ contract SolidaryMetrics is Initializable, AccessControlUpgradeable, UUPSUpgrade
         snapshotIntervalSeconds = secondsInterval;
         emit SnapshotIntervalUpdated(secondsInterval);
     }
+
+    address public solidarityProjectWallet;
+
+function setSolidarityProjectWallet(address newWallet) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    solidarityProjectWallet = newWallet;
+    // Puoi aggiungere una logica di voto qui
+}
 
     // ---------- Snapshot Logic ----------
 
@@ -192,23 +224,5 @@ contract SolidaryMetrics is Initializable, AccessControlUpgradeable, UUPSUpgrade
         emit SnapshotCreated(snapshotId, realCid, snapshots[snapshotId].timestamp);
     }
 
-    // ---------- Upgradeability ----------
-    function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
-
-    // ---------- Helpers ----------
-    // Allow the admin to pull a quick summary from orchestrator (view)
-    function readOrchestratorSummary() external view returns (
-        uint256 qLinks,
-        uint256 sValue,
-        address nftPlanet,
-        address ftSatellite
-    ) {
-        if (address(orchestrator) == address(0)) {
-            return (0, 0, address(0), address(0));
-        }
-        qLinks = orchestrator.totalQuantumLinks();
-        sValue = orchestrator.totalStellarValue();
-        nftPlanet = orchestrator.nftPlanetContract();
-        ftSatellite = orchestrator.ftSatelliteContract();
-    }
 }
+

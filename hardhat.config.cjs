@@ -1,77 +1,67 @@
-// hardhat.config.ts
+require("@nomicfoundation/hardhat-toolbox");
+require("@openzeppelin/hardhat-upgrades");
+require("dotenv").config();
 
-require('ts-node/register'); // Necessario per eseguire la configurazione come TypeScript
-require("@nomicfoundation/hardhat-ignition"); // Carica il modulo Ignition
-
-require("@nomicfoundation/hardhat-toolbox"); // Già presente
-
-// ✅ CARICAMENTO .env O KEYS TEMPORANEE
-const dotenv = require("dotenv");
-const result = dotenv.config();
-
-// ✅ SE .env NON CARICA, PROVA CON KEYS TEMPORANEE
-let PRIVATE_KEY = process.env.PRIVATE_KEY;
-let POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
-let POLYGON_RPC_URL = process.env.POLYGON_RPC_URL;
-
-if (!PRIVATE_KEY) {
-    try {
-        const tempKeys = require("./deploy-keys.temp.js");
-        PRIVATE_KEY = tempKeys.PRIVATE_KEY;
-        POLYGONSCAN_API_KEY = tempKeys.POLYGONSCAN_API_KEY;
-        POLYGON_RPC_URL = tempKeys.POLYGON_RPC_URL;
-        console.log("🔑 Loaded keys from temporary file");
-    } catch (error) {
-        console.log("⚠️  No temporary keys file found");
-    }
+// Controllo variabili d'ambiente critiche
+const missingVars = [];
+if (!process.env.PRIVATE_KEY) missingVars.push("PRIVATE_KEY");
+if (!process.env.BASE_RPC_URL) missingVars.push("BASE_RPC_URL");
+if (!process.env.BASE_SEPOLIA_RPC) missingVars.push("BASE_SEPOLIA_RPC");
+if (!process.env.BASESCAN_API_KEY) missingVars.push("BASESCAN_API_KEY");
+if (!process.env.POLYGON_RPC_URL) missingVars.push("POLYGON_RPC_URL");
+if (missingVars.length > 0) {
+  console.warn(
+    `⚠️  Attenzione: le seguenti variabili d'ambiente non sono definite: ${missingVars.join(", ")}. Il deploy potrebbe fallire.`
+  );
 }
 
-if (!PRIVATE_KEY) {
-    throw new Error("❌ PRIVATE_KEY not found in .env or temp file");
-}
-
-console.log("🔧 Environment loaded successfully:");
-console.log("PRIVATE_KEY length:", PRIVATE_KEY?.length);
-console.log("POLYGONSCAN_API_KEY:", POLYGONSCAN_API_KEY ? "LOADED" : "MISSING");
-console.log("POLYGON_RPC_URL:", POLYGON_RPC_URL ? "LOADED" : "USING DEFAULT");
-
+/** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-    solidity: {
-        version: "0.8.29",
-        settings: {
-            optimizer: {
-                enabled: true,
-                runs: 20000 // ⬅️ LA CONFIGURAZIONE CORRETTA E UNICA
-            },
-            viaIR: true
-        }
+  solidity: {
+    version: "0.8.29",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      },
+      viaIR: true,  // 🔥 SOLUZIONE PER STACK TOO DEEP
+    }
+  },
+  networks: {
+    base: {
+      url: process.env.BASE_RPC_URL || "https://mainnet.base.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      gas: 10000000,
+      gasPrice: 2000000000,
     },
-    networks: {
-        // ✅ POLYGON NETWORK - CONFIGURAZIONE PRINCIPALE
-        polygon: {
-            url: POLYGON_RPC_URL || "https://aged-tiniest-frost.matic.quiknode.pro/b50bb4625032afb94b57bf5efd608270059e0da8",
-            accounts: [PRIVATE_KEY],
-            chainId: 137,
-            gas: 5000000,
-            gasPrice: 40000000000, // 40 Gwei
-        },
-        // ... (Resto delle configurazioni networks, etherscan, paths, gasReporter)
+    base_sepolia: {
+      url: process.env.BASE_SEPOLIA_RPC || "https://sepolia.base.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      gas: 10000000,
+      gasPrice: 2000000000,
     },
-    // ... (Il resto delle sezioni etherscan, paths, gasReporter)
-    etherscan: {
-        apiKey: {
-            polygon: POLYGONSCAN_API_KEY || "your-polygonscan-api-key",
-            polygonMumbai: POLYGONSCAN_API_KEY || "your-polygonscan-api-key",
-        }
+    hardhat: {
+      chainId: 31337,
+      allowUnlimitedContractSize: true
     },
-    paths: {
-        sources: "./contracts",
-        tests: "./test",
-        cache: "./cache",
-        artifacts: "./artifacts"
-    },
-    gasReporter: {
-        enabled: process.env.REPORT_GAS !== undefined,
-        currency: "USD",
-    },
+    polygon: {
+      url: process.env.POLYGON_RPC_URL || "https://polygon-rpc.com",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 137,
+      gas: 10000000,
+      gasPrice: 25000000000,
+    }
+  },
+  etherscan: {
+    apiKey: {
+      base: process.env.BASESCAN_API_KEY || "API_KEY",
+      baseSepolia: process.env.BASESCAN_API_KEY || "API_KEY",
+      polygon: process.env.POLYGONSCAN_API_KEY || "API_KEY",
+      polygonMumbai: process.env.POLYGONSCAN_API_KEY || "API_KEY"
+    }
+  },
+  gasReporter: {
+    enabled: process.env.REPORT_GAS !== undefined,
+    currency: "Polygon Ecosystem Token",
+  },
 };

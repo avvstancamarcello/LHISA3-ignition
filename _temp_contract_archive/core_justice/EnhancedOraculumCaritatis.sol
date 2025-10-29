@@ -61,7 +61,7 @@ contract EnhancedOraculumCaritatis is
     mapping(string => address[]) public regionBlessedSouls;     // regione → elenco wallet
 
     // Riferimenti ecosistema
-    address public solidaryHub;              // EnhancedSolidaryHub
+    address public solidaryHub;              // EnhancedSolidarySystem
     address public impactLogger;             // opzionale
     address public reputationManager;        // EnhancedReputationManager (opzionale)
 

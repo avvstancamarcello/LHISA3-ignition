@@ -9,11 +9,11 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol"; // ⬅️ AGGIUNTO
 
 /**
- * @title EnhancedReputationManager
+ * @title SolidarySystemReputationManager
  * @dev Sistema di reputazione avanzato per l'ecosistema Solidary con storage decentralizzato
  * @notice Gestisce reputazione, trust score e validazione cross-chain
  */
-contract EnhancedReputationManager is Initializable, AccessControlUpgradeable {
+contract SolidarySystemReputationManager is Initializable, AccessControlUpgradeable {
     using StringsUpgradeable for uint256; // ⬅️ AGGIUNTO per conversioni
 
     // ═══════════════════════════════════════════════════════════════════════════════
@@ -34,7 +34,7 @@ contract EnhancedReputationManager is Initializable, AccessControlUpgradeable {
     // 📊 ENHANCED DATA STRUCTURES
     // ═══════════════════════════════════════════════════════════════════════════════
 
-    struct EnhancedReputation {
+    struct SolidarySystemReputation {
         uint256 currentScore;
         uint256 totalValidations;
         uint256 totalReports;
@@ -76,7 +76,7 @@ contract EnhancedReputationManager is Initializable, AccessControlUpgradeable {
     // 💾 STATE VARIABLES
     // ═══════════════════════════════════════════════════════════════════════════════
 
-    mapping(address => EnhancedReputation) public reputations;
+    mapping(address => SolidarySystemReputation) public reputations;
     mapping(address => ReputationEvent[]) public userReputationHistory;
     mapping(address => TrustNetwork) public trustNetworks;
     mapping(address => string[]) public userReputationCIDs;
@@ -168,7 +168,7 @@ contract EnhancedReputationManager is Initializable, AccessControlUpgradeable {
         string memory reason,
         string memory evtCID
     ) internal {
-        EnhancedReputation storage rep = reputations[user];
+        SolidarySystemReputation storage rep = reputations[user];
 
         // Inizializza se nuovo utente
         if (rep.joinDate == 0) {
@@ -298,7 +298,7 @@ contract EnhancedReputationManager is Initializable, AccessControlUpgradeable {
     ) external onlyRole(MODERATOR) {
         require(user != address(0), "Invalid user address");
 
-        EnhancedReputation storage rep = reputations[user];
+        SolidarySystemReputation storage rep = reputations[user];
         rep.totalReports++;
 
         // Penalità reputazione per report
@@ -359,7 +359,7 @@ contract EnhancedReputationManager is Initializable, AccessControlUpgradeable {
     }
 
     function _updateUserReputationOnIPFS(address user) internal {
-        EnhancedReputation storage rep = reputations[user];
+        SolidarySystemReputation storage rep = reputations[user];
 
         bytes memory repData = abi.encodePacked(
             '{"user": "', _addressToString(user),

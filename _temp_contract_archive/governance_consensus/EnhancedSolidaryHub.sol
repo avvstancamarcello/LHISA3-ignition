@@ -10,12 +10,12 @@ import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 /**
- * @title EnhancedSolidaryHub (Rector Orbis - The Ruler of the World)
+ * @title EnhancedSolidarySystem (Rector Orbis - The Ruler of the World)
  * @author Avv. Marcello Stanca - Architectus Aequitatis
  * @notice Cor Aetereum et Director Orchestae Oecosystematis 'Solidary System'. 
  * Hic, omnes moduli in unam symphoniam caritatis conveniunt cum potentia nova et sapientia.
  */
-contract EnhancedSolidaryHub is Initializable, AccessControlUpgradeable, PausableUpgradeable, UUPSUpgradeable {
+contract EnhancedSolidarySystem is Initializable, AccessControlUpgradeable, PausableUpgradeable, UUPSUpgradeable {
 
     // ═══════════════════════════════════════════════════════════════════════════════
     // 🔐 ROLES & CONSTANTS

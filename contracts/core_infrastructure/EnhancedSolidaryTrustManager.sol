@@ -10,11 +10,12 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol"; // AGGIUNTO per Strings
 
 /**
- * @title EnhancedSolidaryTrustManager (Custos Fidei - The Guardian of Trust)
+ * @title SolidarySystemTrustManager
+ * (The Guardian of Solidary Trust)
  * @author Avv. Marcello Stanca - Architectus Aequitatis
  * @notice Sistema avanzato di certificazione e policy management per l'ecosistema Solidary
  */
-contract EnhancedSolidaryTrustManager is Initializable, OwnableUpgradeable, UUPSUpgradeable, AccessControlUpgradeable {
+contract SolidarySystemSolidaryTrustManager is Initializable, OwnableUpgradeable, UUPSUpgradeable, AccessControlUpgradeable {
     using StringsUpgradeable for uint256; // AGGIUNTO per conversioni (es. _uint2str)
 
     bytes32 public constant CERTIFICATION_ORACLE = keccak256("CERTIFICATION_ORACLE");
@@ -24,8 +25,8 @@ contract EnhancedSolidaryTrustManager is Initializable, OwnableUpgradeable, UUPS
     // 📊 STRUCTURE POTENZIATE
     // ═══════════════════════════════════════════════════════════════════════════════
     
-    // [Strutture EnhancedCertificate, EnhancedPolicy, TrustScore come fornite nell'input utente]
-    struct EnhancedCertificate {
+    // [Strutture SolidarySystemCertificate, SolidarySystemPolicy, TrustScore come fornite nell'input utente]
+    struct SolidarySystemCertificate {
         string name;
         address module;
         uint256 issuedAt;
@@ -39,7 +40,7 @@ contract EnhancedSolidaryTrustManager is Initializable, OwnableUpgradeable, UUPS
         string auditResultsCID;
     }
 
-    struct EnhancedPolicy {
+    struct SolidarySystemPolicy {
         string description;
         uint256 createdAt;
         bool active;
@@ -62,9 +63,56 @@ contract EnhancedSolidaryTrustManager is Initializable, OwnableUpgradeable, UUPS
     // ═══════════════════════════════════════════════════════════════════════════════
     // 💾 STATE VARIABLES AVANZATE
     // ═══════════════════════════════════════════════════════════════════════════════
+    // 💸 SOLIDARY ROYALTIES & METRICS
+    // ═══════════════════════════════════════════════════════════════════════════════
+    address public solidaryMetrics;
+    address public caritasInternationalis;
+    mapping(address => address) public creatorWallets; // creator per modulo
 
-    mapping(address => EnhancedCertificate) public certificates;
-    mapping(bytes32 => EnhancedPolicy) public policies;
+    event SolidaryMintProcessed(address indexed minter, address indexed creator, uint256 amount, uint256 creatorShare, uint256 caritasShare);
+
+    function setSolidaryMetrics(address _metrics) external onlyOwner {
+        solidaryMetrics = _metrics;
+    }
+    function setCaritasInternationalis(address _caritas) external onlyOwner {
+        caritasInternationalis = _caritas;
+    }
+    function setCreatorWallet(address module, address creator) external onlyOwner {
+        creatorWallets[module] = creator;
+    }
+
+    /**
+     * @notice Process mint, distribute royalties, notify metrics
+     * @param module address of the NFT/FT contract
+     * @param minter address of the user minting
+     * @param amount total value sent by minter
+     */
+    function processMintAndNotify(address module, address minter, uint256 amount) external {
+        require(solidaryMetrics != address(0), "Metrics not set");
+        require(caritasInternationalis != address(0), "Caritas not set");
+        address creator = creatorWallets[module];
+        require(creator != address(0), "Creator not set");
+
+        uint256 creatorShare = (amount * 25) / 1000; // 2.5%
+        uint256 caritasShare = (amount * 25) / 1000; // 2.5%
+
+        // Transfer royalties
+        (bool sentCreator, ) = creator.call{value: creatorShare}("");
+        require(sentCreator, "Creator transfer failed");
+        (bool sentCaritas, ) = caritasInternationalis.call{value: caritasShare}("");
+        require(sentCaritas, "Caritas transfer failed");
+
+        // Notifica a SolidaryMetrics
+        (bool notified, ) = solidaryMetrics.call(abi.encodeWithSignature(
+            "registerCharityDonation(address,uint256)", minter, caritasShare
+        ));
+        require(notified, "Metrics notification failed");
+
+        emit SolidaryMintProcessed(minter, creator, amount, creatorShare, caritasShare);
+    }
+
+    mapping(address => SolidarySystemCertificate) public certificates;
+    mapping(bytes32 => SolidarySystemPolicy) public policies;
     mapping(address => TrustScore) public trustScores;
     mapping(string => address[]) public certifiedModulesByType;
 
@@ -254,7 +302,7 @@ contract EnhancedSolidaryTrustManager is Initializable, OwnableUpgradeable, UUPS
         _updateTrustScore(module, -30);
     }
 
-    function _addEnhancedPolicy(
+    function _addSolidarySystemPolicy(
         string memory description,
         string memory policyType,
         string memory enforcement,
@@ -264,7 +312,7 @@ contract EnhancedSolidaryTrustManager is Initializable, OwnableUpgradeable, UUPS
         
         string memory policyCID = _uploadToIPFS(bytes(policyData)); // _uploadToIPFS è definito sopra.
         bytes32 policyId = keccak256(abi.encodePacked(description, block.timestamp));
-        policies[policyId] = EnhancedPolicy({
+        policies[policyId] = SolidarySystemPolicy({
             description: description,
             createdAt: block.timestamp,
             active: true,
@@ -281,29 +329,29 @@ contract EnhancedSolidaryTrustManager is Initializable, OwnableUpgradeable, UUPS
     }
 
     function _initializeCorePolicies() internal {
-        // [Contenuto omesso per brevità, ma qui usa _addEnhancedPolicy]
-        _addEnhancedPolicy(
+        // [Contenuto omesso per brevità, ma qui usa _addSolidarySystemPolicy]
+        _addSolidarySystemPolicy(
             "Anti-Speculation Policy",
             "ethical",
             "Proibisce pattern di trading speculativo e wash trading",
             "suspend",
             "Policy contro comportamenti speculativi dannosi"
         );
-        _addEnhancedPolicy(
+        _addSolidarySystemPolicy(
             "Fair Distribution Policy", 
             "economic",
             "Garantisce distribuzione equa di token e NFT",
             "penalize", 
             "Policy per distribuzione equa delle risorse"
         );
-        _addEnhancedPolicy(
+        _addSolidarySystemPolicy(
             "Transparency Policy",
             "ethical", 
             "Richiede trasparenza totale nelle operazioni",
             "warning",
             "Policy per trasparenza operativa completa"
         );
-        _addEnhancedPolicy(
+        _addSolidarySystemPolicy(
             "Solidary Impact Policy",
             "ethical",
             "Richiede verifica impatti solidali misurabili", 
@@ -317,7 +365,7 @@ contract EnhancedSolidaryTrustManager is Initializable, OwnableUpgradeable, UUPS
     // 🔐 ENHANCED CERTIFICATION SYSTEM
     // ═══════════════════════════════════════════════════════════════════════════════
 
-    function issueEnhancedCertificate(
+    function issueSolidarySystemCertificate(
         address module,
         string memory name,
         string memory certificateType,
@@ -331,7 +379,7 @@ contract EnhancedSolidaryTrustManager is Initializable, OwnableUpgradeable, UUPS
         require(validityDuration >= 30 days, "Validity must be at least 30 days");
 
         complianceCID = _storeComplianceDocument(complianceData);
-        certificates[module] = EnhancedCertificate({
+        certificates[module] = SolidarySystemCertificate({
             name: name,
             module: module,
             issuedAt: block.timestamp,
@@ -358,7 +406,7 @@ contract EnhancedSolidaryTrustManager is Initializable, OwnableUpgradeable, UUPS
         uint256 trustLevel, 
         string memory certificateType
     ) {
-        EnhancedCertificate memory cert = certificates[module];
+        SolidarySystemCertificate memory cert = certificates[module];
         bool valid = (
             cert.module != address(0) &&
             !cert.revoked &&
@@ -380,7 +428,7 @@ contract EnhancedSolidaryTrustManager is Initializable, OwnableUpgradeable, UUPS
         require(policies[policyId].active, "Policy not active");
         require(certificates[module].module != address(0), "Module not certified");
 
-        EnhancedPolicy memory policy = policies[policyId];
+        SolidarySystemPolicy memory policy = policies[policyId];
         actionTaken = policy.enforcementAction;
 
         if (keccak256(bytes(actionTaken)) == keccak256(bytes("suspend"))) {

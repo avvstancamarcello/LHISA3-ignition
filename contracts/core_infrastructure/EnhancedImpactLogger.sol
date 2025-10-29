@@ -9,11 +9,11 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
        using StringsUpgradeable for uint256;
 /**
- * @title EnhancedImpactLogger
+ * @title SolidarySystemImpactLogger
  * @dev Sistema avanzato di logging impatti per l'ecosistema Solidary
  * @notice Traccia impatti sociali, ambientali e comunitari con storage decentralizzato
  */
-contract EnhancedImpactLogger is Initializable, AccessControlUpgradeable {
+contract SolidarySystemImpactLogger is Initializable, AccessControlUpgradeable {
     bytes32 public constant IMPACT_ORACLE = keccak256("IMPACT_ORACLE");
     bytes32 public constant IMPACT_VALIDATOR = keccak256("IMPACT_VALIDATOR");
     bytes32 public constant IMPACT_ANALYST = keccak256("IMPACT_ANALYST");
