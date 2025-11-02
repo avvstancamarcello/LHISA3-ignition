@@ -1,13 +1,12 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@openzeppelin/hardhat-upgrades");
 require("dotenv").config();
-
 // Controllo variabili d'ambiente critiche
 const missingVars = [];
 if (!process.env.PRIVATE_KEY) missingVars.push("PRIVATE_KEY");
 if (!process.env.BASE_RPC_URL) missingVars.push("BASE_RPC_URL");
 if (!process.env.BASE_SEPOLIA_RPC) missingVars.push("BASE_SEPOLIA_RPC");
-if (!process.env.BASESCAN_API_KEY) missingVars.push("BASESCAN_API_KEY");
+if (!process.env.ETHERSCAN_API_KEY) missingVars.push("ETHERSCAN_API_KEY");
 if (!process.env.POLYGON_RPC_URL) missingVars.push("POLYGON_RPC_URL");
 if (missingVars.length > 0) {
   console.warn(
@@ -18,14 +17,45 @@ if (missingVars.length > 0) {
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
-    version: "0.8.29",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
+    compilers: [
+      {
+        version: "0.8.29",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1000
+          },
+          viaIR: true,  // Required to avoid stack too deep
+        }
       },
-      viaIR: true,  // 🔥 SOLUZIONE PER STACK TOO DEEP
-    }
+      {
+        version: "0.6.6",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          },
+        }
+      },
+      {
+        version: "0.6.2",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          },
+        }
+      },
+      {
+        version: "0.5.16",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          },
+        }
+      }
+    ]
   },
   networks: {
     base: {
@@ -48,17 +78,13 @@ module.exports = {
       url: process.env.POLYGON_RPC_URL || "https://polygon-rpc.com",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 137,
-      gas: 10000000,
-      gasPrice: 25000000000,
+      gasPrice: 200000000000, // 200 Gwei legacy gas price
+      maxFeePerGas: 500000000000, // 500 Gwei max fee (increased)
+      maxPriorityFeePerGas: 100000000000, // 100 Gwei priority fee (increased)
     }
   },
   etherscan: {
-    apiKey: {
-      base: process.env.BASESCAN_API_KEY || "API_KEY",
-      baseSepolia: process.env.BASESCAN_API_KEY || "API_KEY",
-      polygon: process.env.POLYGONSCAN_API_KEY || "API_KEY",
-      polygonMumbai: process.env.POLYGONSCAN_API_KEY || "API_KEY"
-    }
+    apiKey: process.env.ETHERSCAN_API_KEY || "API_KEY"
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
