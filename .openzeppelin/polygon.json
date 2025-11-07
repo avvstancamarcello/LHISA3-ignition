@@ -1,0 +1,591 @@
+{
+  "manifestVersion": "3.2",
+  "proxies": [],
+  "impls": {
+    "bbeba47814760f088e713aa5e4a5a302bf234ca989d670860c14a1062cff41b7": {
+      "address": "0x361eDa57Cd71C976B638fEC20256a433107c9282",
+      "txHash": "0x7bb99e0e0aeee07ca2432ee0c57223bed9343e259e1c831e972b1558e345c56d",
+      "layout": {
+        "solcVersion": "0.8.29",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:40"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC165Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol:41"
+          },
+          {
+            "label": "_roles",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)23_storage)",
+            "contract": "AccessControlUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:57"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "AccessControlUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:260"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_bool",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:116"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:88"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "251",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1967UpgradeUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:169"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "301",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "UUPSUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:111"
+          },
+          {
+            "label": "solidarySystemModuleUtils",
+            "offset": 0,
+            "slot": "351",
+            "type": "t_address",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:44"
+          },
+          {
+            "label": "modulesByLayer",
+            "offset": 0,
+            "slot": "352",
+            "type": "t_mapping(t_uint8,t_array(t_address)dyn_storage)",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:113"
+          },
+          {
+            "label": "modules",
+            "offset": 0,
+            "slot": "353",
+            "type": "t_mapping(t_address,t_struct(EnhancedModuleInfo)3351_storage)",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:113"
+          },
+          {
+            "label": "moduleByName",
+            "offset": 0,
+            "slot": "354",
+            "type": "t_mapping(t_string_memory_ptr,t_address)",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:115"
+          },
+          {
+            "label": "modulesByType",
+            "offset": 0,
+            "slot": "355",
+            "type": "t_mapping(t_string_memory_ptr,t_array(t_address)dyn_storage)",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:116"
+          },
+          {
+            "label": "solidaryOrchestrator",
+            "offset": 0,
+            "slot": "356",
+            "type": "t_address",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:117"
+          },
+          {
+            "label": "oceanMangaNFT",
+            "offset": 0,
+            "slot": "357",
+            "type": "t_address",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:120"
+          },
+          {
+            "label": "lunaComicsFT",
+            "offset": 0,
+            "slot": "358",
+            "type": "t_address",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:120"
+          },
+          {
+            "label": "solidaryMetrics",
+            "offset": 0,
+            "slot": "359",
+            "type": "t_address",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:120"
+          },
+          {
+            "label": "reputationManager",
+            "offset": 0,
+            "slot": "360",
+            "type": "t_address",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:120"
+          },
+          {
+            "label": "impactLogger",
+            "offset": 0,
+            "slot": "361",
+            "type": "t_address",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:120"
+          },
+          {
+            "label": "moduleRouter",
+            "offset": 0,
+            "slot": "362",
+            "type": "t_address",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:122"
+          },
+          {
+            "label": "multiChainOrchestrator",
+            "offset": 0,
+            "slot": "363",
+            "type": "t_address",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:122"
+          },
+          {
+            "label": "storageConfig",
+            "offset": 0,
+            "slot": "364",
+            "type": "t_struct(StorageConfiguration)3381_storage",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:123"
+          },
+          {
+            "label": "ecosystemHealth",
+            "offset": 0,
+            "slot": "370",
+            "type": "t_struct(EcosystemHealth)3368_storage",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:123"
+          },
+          {
+            "label": "ecosystemState",
+            "offset": 0,
+            "slot": "378",
+            "type": "t_struct(EnhancedEcosystemState)3400_storage",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:123"
+          },
+          {
+            "label": "totalModuleRegistrations",
+            "offset": 0,
+            "slot": "387",
+            "type": "t_uint256",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:124"
+          },
+          {
+            "label": "totalCrossModuleCalls",
+            "offset": 0,
+            "slot": "388",
+            "type": "t_uint256",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:125"
+          },
+          {
+            "label": "totalEmergencyEvents",
+            "offset": 0,
+            "slot": "389",
+            "type": "t_uint256",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:125"
+          },
+          {
+            "label": "totalRouteCalls",
+            "offset": 0,
+            "slot": "390",
+            "type": "t_uint256",
+            "contract": "SolidarySystemHub",
+            "src": "contracts/core/SolidarySystemHub.sol:125"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(EnhancedModuleInfo)3351_storage)": {
+            "label": "mapping(address => struct SolidarySystemHub.EnhancedModuleInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)23_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_string_memory_ptr,t_address)": {
+            "label": "mapping(string => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_string_memory_ptr,t_array(t_address)dyn_storage)": {
+            "label": "mapping(string => address[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint8,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint8 => address[])",
+            "numberOfBytes": "32"
+          },
+          "t_string_memory_ptr": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(EcosystemHealth)3368_storage": {
+            "label": "struct SolidarySystemHub.EcosystemHealth",
+            "members": [
+              {
+                "label": "overallScore",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "moduleHealth",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "crossChainHealth",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "reputationHealth",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "impactHealth",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "storageHealth",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "healthCID",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "lastCheck",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              }
+            ],
+            "numberOfBytes": "256"
+          },
+          "t_struct(EnhancedEcosystemState)3400_storage": {
+            "label": "struct SolidarySystemHub.EnhancedEcosystemState",
+            "members": [
+              {
+                "label": "totalUsers",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "totalImpact",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "globalReputation",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "totalTransactions",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "crossChainVolume",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "carbonFootprint",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "totalValueLocked",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "emergencyMode",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "stateCID",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "8"
+              }
+            ],
+            "numberOfBytes": "288"
+          },
+          "t_struct(EnhancedModuleInfo)3351_storage": {
+            "label": "struct SolidarySystemHub.EnhancedModuleInfo",
+            "members": [
+              {
+                "label": "contractAddress",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "moduleName",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "layer",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "active",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "2"
+              },
+              {
+                "label": "version",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "moduleType",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "ipfsCID",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "lastInteraction",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "successRate",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "totalInteractions",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "dependencies",
+                "type": "t_array(t_address)dyn_storage",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "dependents",
+                "type": "t_array(t_address)dyn_storage",
+                "offset": 0,
+                "slot": "10"
+              }
+            ],
+            "numberOfBytes": "352"
+          },
+          "t_struct(RoleData)23_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "members",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(StorageConfiguration)3381_storage": {
+            "label": "struct SolidarySystemHub.StorageConfiguration",
+            "members": [
+              {
+                "label": "nftStorageAPIKey",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "pinataJWT",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "ipfsBaseURI",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "storageEnabled",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "totalCIDsStored",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "storageAnalyticsCID",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    }
+  }
+}

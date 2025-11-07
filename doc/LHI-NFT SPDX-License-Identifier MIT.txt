@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+// Import corretti per l'ambiente Hardhat (da node_modules)
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+/**
+ * @title LHILecceNFT
+ * @notice Contratto ERC-1155 per la collezione LHI Lecce, compatibile con OZ v5.
+ * @dev Questo contratto gestisce la creazione e la proprietà degli NFT ed è controllabile dai contratti Manager.
+ */
+contract LHILecceNFT is ERC1155, ERC1155Supply, Ownable {
+    
+    // Indirizzi dei contratti Manager che hanno il permesso di mintare
+    address public fungibleManager;
+    address public nonFungibleManager;
+
+    // Evento per tracciare l'impostazione dei manager
+    event ManagerSet(string managerType, address indexed managerAddr);
+
+    /**
+     * @notice Costruttore del contratto.
+     * @param initialOwner L'indirizzo che diventerà l'owner del contratto.
+     * @param uri_ L'URI di base per i metadati dei token.
+     */
+    constructor(address initialOwner, string memory uri_)
+        ERC1155(uri_)
+        Ownable(initialOwner)
+    {}
+    
+    /**
+     * @notice Imposta un nuovo URI di base per i metadati (solo owner).
+     * @param newuri Il nuovo URI da impostare.
+     */
+    function setURI(string memory newuri) public onlyOwner {
+        _setURI(newuri);
+    }
+    
+    /**
+     * @notice Imposta l'indirizzo del manager dei token fungibili (solo owner).
+     * @param _manager L'indirizzo del contratto manager.
+     */
+    function setFungibleManager(address _manager) public onlyOwner {
+        require(_manager != address(0), "Invalid manager address");
+        fungibleManager = _manager;
+        emit ManagerSet("FUNGIBLE", _manager);
+    }
+    
+    /**
+     * @notice Imposta l'indirizzo del manager dei token non fungibili (solo owner).
+     * @param _manager L'indirizzo del contratto manager.
+     */
+    function setNonFungibleManager(address _manager) public onlyOwner {
+        require(_manager != address(0), "Invalid manager address");
+        nonFungibleManager = _manager;
+        emit ManagerSet("NON_FUNGIBLE", _manager);
+    }
+
+    /**
+     * @notice Funzione di mint pubblica, ma controllata.
+     * @dev Può essere chiamata solo dai contratti Manager autorizzati.
+     */
+    function mint(address to, uint256 id, uint256 amount, bytes memory data) public {
+        require(
+            msg.sender == fungibleManager || msg.sender == nonFungibleManager,
+            "Caller is not an authorized manager"
+        );
+        _mint(to, id, amount, data);
+    }
+    
+    /**
+     * @dev Correzione obbligatoria per OZ v5 per risolvere il conflitto di ereditarietà.
+     */
+    function _update(address from, address to, uint256[] memory ids, uint256[] memory amounts)
+        internal
+        override(ERC1155, ERC1155Supply)
+    {
+        super._update(from, to, ids, amounts);
+    }
+}

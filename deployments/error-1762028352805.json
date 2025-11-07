@@ -1,0 +1,6 @@
+{
+  "timestamp": "2025-11-01T20:19:12.805Z",
+  "error": "could not decode result data (value=\"0x\", info={ \"method\": \"name\", \"signature\": \"name()\" }, code=BAD_DATA, version=6.15.0)",
+  "stage": "EXECUTION",
+  "status": "DEPLOYMENT_FAILED"
+}

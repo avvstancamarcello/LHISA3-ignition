@@ -1,0 +1,31 @@
+{
+  "timestamp": "2025-11-06T20:12:05.423Z",
+  "network": "base",
+  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "wallets": {
+    "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "creator": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "charity": "0xf84eb8B95407f04Dee8fF9acaC0e0AC7231bAb2A",
+    "charityAlias": "caritasinternational.cb.id"
+  },
+  "contracts": {
+    "OceanMangaNFT": "0x4b6aB5F819A515382B0dEB6935D793817bB4af28",
+    "LunaComicsFT": "0xCace1b78160AE76398F486c8a18044da0d66d86D",
+    "OceanMangaOrchestrator": "0xD5ac451B0c50B9476107823Af206eD814a2e2580",
+    "TokenRouter": "0xc96304e3c037f81dA488ed9dEa1D8F2a48278a75",
+    "AdvancedSwapper": "0x34B40BA116d5Dec75548a9e9A8f15411461E8c70"
+  },
+  "supportedSwapTokens": {
+    "WETH": "0x4200000000000000000000000000000000000006",
+    "USDC": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "DAI": "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb",
+    "cbETH": "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22"
+  },
+  "feeDistribution": {
+    "creatorShare": "2.5%",
+    "charityShare": "2.5%",
+    "totalFees": "5%"
+  },
+  "gasUsed": "Minimal",
+  "status": "READY_FOR_MINTING"
+}

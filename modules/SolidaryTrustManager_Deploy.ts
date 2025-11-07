@@ -8,7 +8,7 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
  */
 const SolidaryTrustManagerModule = buildModule("SolidaryTrustManagerModule", (m) => {
   
-  const admin = m.getParameter("admin", "0x514efc732cc787fb19c90d01edaf5a79d7e2385d");
+  const admin = m.getParameter("admin", "0x8495B3f7493263685fFcDA2602fFfF349d4eD3B");
   
   console.log("🏛️ Deploying SolidaryTrustManager...");
   console.log("⚖️ Custos Fidei - The Guardian of Trust");

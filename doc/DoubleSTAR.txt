@@ -1,0 +1,140 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.29;
+
+// Copyright © 2025 Avv. Marcello Stanca - Firenze, Italia. All Rights Reserved.
+
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "../core_justice/RefundManager.sol";
+
+/**
+ * @title SolidaryComics_StellaDoppia
+ * @author Avv. Marcello Stanca - Architectus Fabularum (Architect of Stories)
+ */
+contract SolidaryComics_StellaDoppia is 
+    Initializable,
+    ERC1155SupplyUpgradeable, 
+    OwnableUpgradeable,
+    UUPSUpgradeable, 
+    RefundManager 
+{
+    uint256 public constant FT_COMIX_ID = 0;
+    uint256 public constant NFT_PASS_ID = 1;
+    address public charityWallet;
+    uint256 public feePercent;
+
+    event ComicDonation(address indexed user, uint256 amount);
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(
+        address initialAdmin,
+        address _charityWallet,
+        uint256 _feePercent,
+        address _creatorWallet,
+        address _solidaryWallet,
+        uint256 _refundDeadline,
+        uint256 _initialThreshold
+    ) public initializer {
+        // ✅ INIZIALIZZAZIONE CORRETTA
+        __ERC1155_init("");
+        __ERC1155Supply_init();
+        __Ownable_init(initialAdmin);  // ✅ CORRETTO: con argomento
+        __UUPSUpgradeable_init();
+        __RefundManager_init(_creatorWallet, _solidaryWallet, _refundDeadline, _initialThreshold);
+
+        charityWallet = _charityWallet;
+        feePercent = _feePercent;
+    }
+
+    function acquistaAccesso() external payable {
+        _recordContribution(msg.sender, msg.value);
+        uint256 ftValue = (msg.value * 49) / 100;
+        _mint(msg.sender, NFT_PASS_ID, 1, "");
+        uint256 comixPrice = 0.01 ether;
+        uint256 amountComixToMint = ftValue / comixPrice;
+        _mint(msg.sender, FT_COMIX_ID, amountComixToMint, "");
+    }
+
+    // ✅ _update SEMPLIFICATO E FUNZIONANTE
+    function _update(
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory values
+    ) internal virtual override {
+        // Logica charity fee solo per trasferimenti tra wallet (non mint/burn)
+        if (from != address(0) && to != address(0) && feePercent > 0) {
+            for (uint256 i = 0; i < ids.length; ++i) {
+                if (ids[i] == FT_COMIX_ID && values[i] > 0) {
+                    uint256 fee = (values[i] * feePercent) / 100;
+                    if (fee > 0) {
+                        // Riduci l'amount del trasferimento principale
+                        values[i] -= fee;
+                        
+                        // Trasferisci la fee alla charity
+                        uint256[] memory feeIds = new uint256[](1);
+                        uint256[] memory feeValues = new uint256[](1);
+                        feeIds[0] = ids[i];
+                        feeValues[0] = fee;
+                        
+                        super._update(from, charityWallet, feeIds, feeValues);
+                        emit ComicDonation(from, fee);
+                    }
+                }
+            }
+        }
+        
+        // Esegui il trasferimento principale
+        super._update(from, to, ids, values);
+    }
+
+    // ✅ FUNZIONI ADMIN - Solo owner
+    function setFeePercent(uint256 newFee) external onlyOwner {
+        require(newFee <= 10, "Fee too high");
+        feePercent = newFee;
+    }
+
+    function updateCharityWallet(address newWallet) external onlyOwner {
+        require(newWallet != address(0), "Invalid wallet");
+        charityWallet = newWallet;
+    }
+
+    function setURI(string memory newuri) external onlyOwner {
+        _setURI(newuri);
+    }
+
+    // ✅ OVERRIDE CORRETTI - RefundManager RIMOSSO dagli override
+    function owner() 
+        public 
+        view 
+        virtual 
+        override(OwnableUpgradeable)  // ✅ SOLO OwnableUpgradeable
+        returns (address) 
+    {
+        return super.owner();
+    }
+
+    // ✅ SUPPORTS INTERFACE CORRETTO
+    function supportsInterface(bytes4 interfaceId) 
+        public 
+        view 
+        virtual 
+        override(ERC1155Upgradeable)  // ✅ SOLO ERC1155Upgradeable
+        returns (bool) 
+    {
+        return super.supportsInterface(interfaceId);
+    }
+
+    // ✅ AUTHORIZE UPGRADE CORRETTO
+    function _authorizeUpgrade(address newImplementation) 
+        internal 
+        virtual 
+        override(UUPSUpgradeable)  // ✅ SOLO UUPSUpgradeable
+        onlyOwner 
+    {}
+}

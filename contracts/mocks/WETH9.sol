@@ -15,7 +15,7 @@ contract WETH9 is ERC20 {
     }
 
     function withdraw(uint wad) public {
-        require(balanceOf(msg.sender) >= wad);
+        require(balanceOf(msg.sender) >= wad, "WETH9: insufficient balance");
         _burn(msg.sender, wad);
         payable(msg.sender).transfer(wad);
         emit Withdrawal(msg.sender, wad);

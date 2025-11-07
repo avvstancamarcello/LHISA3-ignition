@@ -31,6 +31,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 interface ISolidaryOrchestratorReadable {
     function nftPlanetContract() external view returns (address);
@@ -45,18 +46,19 @@ contract OceanMangaNFT is
     ERC2981Upgradeable,
     AccessControlUpgradeable,
     PausableUpgradeable,
-    UUPSUpgradeable
+    UUPSUpgradeable,
+    ReentrancyGuardUpgradeable
 {
-    // SolidaryMetrics contract address
-    address public solidaryMetrics;
+    // SolidarySystemMetrics contract address
+    address public solidarySystemMetrics;
 
-    event SolidaryMetricsUpdated(address indexed metrics);
+    event SolidarySystemMetricsUpdated(address indexed metrics);
     /**
-     * Imposta l'indirizzo del contratto SolidaryMetrics
+    * Imposta l'indirizzo del contratto SolidarySystemMetrics
      */
-    function setSolidaryMetrics(address metrics) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        solidaryMetrics = metrics;
-        emit SolidaryMetricsUpdated(metrics);
+    function setSolidarySystemMetrics(address metrics) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        solidarySystemMetrics = metrics;
+        emit SolidarySystemMetricsUpdated(metrics);
     }
     // Ruoli
     bytes32 public constant MINTER_ROLE  = keccak256("MINTER_ROLE");
@@ -109,6 +111,9 @@ contract OceanMangaNFT is
         __AccessControl_init();
         __Pausable_init();
         __UUPSUpgradeable_init();
+        __ReentrancyGuard_init();
+
+        require(admin != address(0), "Admin address cannot be zero");
 
         name = _name;
         symbol = _symbol;
@@ -160,14 +165,8 @@ contract OceanMangaNFT is
 
     function mint(address to, uint256 id, uint256 amount, bytes calldata data)
     external payable
-    onlyRole(MINTER_ROLE)
     {
         _mint(to, id, amount, data);
-        require(trustManager != address(0), "TrustManager not set");
-        (bool success, ) = trustManager.call{value: msg.value}(abi.encodeWithSignature(
-            "processMintAndNotify(address,address,uint256)", address(this), msg.sender, msg.value
-        ));
-        require(success, "TrustManager mint failed");
     }
 
     function mintBatch(address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data)

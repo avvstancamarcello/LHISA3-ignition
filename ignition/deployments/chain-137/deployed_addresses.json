@@ -1,0 +1,22 @@
+{
+  "SolidaryCoreModule#EduManager": "0xB7a0455ca18750cD5b61F48a73af2AC511898f79",
+  "SolidaryCoreModule#FaithMint": "0x96897303c6969fB3479A502f0614e1ecBCEE329C",
+  "SolidaryCoreModule#GovMint": "0x2d1271794b23e02d569FE6167631c82902152993",
+  "SolidaryCoreModule#GovToken": "0x60da14D6a614720bcDC5EEE28d0D2E510fac836F",
+  "SolidaryCoreModule#HeartBridge": "0x59bf29481e4E6e6c58729734c3551ecB81ee533d",
+  "SolidaryCoreModule#ImpactLogger": "0x3E01ecA61f0ac7A25dF2142D3C036292808E0B91",
+  "SolidaryCoreModule#JusticeManager": "0x6dAD7a431C8527fEAB2940149688980689c14e5e",
+  "SolidaryCoreModule#LunaComicsFT": "0xE82CCA2448C87c4B07e489714eC16684209D7D58",
+  "SolidaryCoreModule#Metrics": "0xf7d5dED91d12FF8A9F08888dF2Da1E680af0F9FB",
+  "SolidaryCoreModule#OceanMangaNFT": "0xBeC80BF2ef21597c0b40106D8eF70d03fEE44C79",
+  "SolidaryCoreModule#OrchestratorV2": "0x89CfA5418326f22999Ac2265aA48D173A4Da6f86",
+  "SolidaryCoreModule#PeaceManager": "0xB86e162e3008D0dDFB5bB2e3BA27144AE5D9edBe",
+  "SolidaryCoreModule#ReputationManager": "0xd9f12bC43287BC98392C52C16E12c27e55E0fF0b",
+  "SolidaryCoreModule#Router": "0x0c415b3c53727fd1Ab02D3EC337aDB4b2399277e",
+  "SolidaryCoreModule#SocialMint": "0x5823c9270013F72Ba4CAE939C1FFbE69B325714c",
+  "SolidaryCoreModule#SolidaryHub": "0x221be674D710e9AaD3129407538a5D84B5BF3FDb",
+  "SolidaryCoreModule#SoulBridge": "0xC0Ad7464f8d0c1B096d5832cA02f1E6A85b89A7E",
+  "SolidaryCoreModule#SponsorVault": "0xB19Ee3A16554d339111028fe3a76fEE5AE45E8A3",
+  "SolidaryCoreModule#TrustManager": "0x71fEB584DFE553268152A699a98194B5724F74b1",
+  "SolidaryCoreModule#UnivManager": "0xCB931e6B2D2ff405ed6369872843c157210eF24b"
+}

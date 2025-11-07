@@ -1,0 +1,207 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+// © Copyright Marcello Stanca Lawyer - ITALY Florence
+
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+interface ISolidarySponsorVault {
+    function mintSponsorToken(address to, string memory sponsorshipNote) external;
+    function hasRole(bytes32 role, address account) external view returns (bool);
+    function SPONSOR_ROLE() external view returns (bytes32);
+}
+
+/**
+ * @title CaritasDonationManager
+ * @dev Contratto per gestire donazioni verso Caritas attraverso il SponsorVault
+ * Consente donazioni in MATIC che vengono trasferite a Caritas con logging
+ */
+contract CaritasDonationManager is AccessControl, ReentrancyGuard {
+    
+    ISolidarySponsorVault public immutable sponsorVault;
+    address payable public caritasWallet;
+    
+    uint256 public totalDonations;
+    uint256 public totalDonors;
+    
+    bytes32 public constant DONATION_MANAGER_ROLE = keccak256("DONATION_MANAGER_ROLE");
+    
+    struct Donation {
+        address donor;
+        uint256 amount;
+        string message;
+        uint256 timestamp;
+    }
+    
+    mapping(address => uint256) public donorTotalAmount;
+    mapping(address => uint256) public donorCount;
+    Donation[] public donations;
+    
+    event DonationReceived(
+        address indexed donor, 
+        uint256 amount, 
+        string message,
+        uint256 indexed donationId
+    );
+    
+    event CaritasWalletUpdated(address indexed oldWallet, address indexed newWallet);
+    
+    modifier onlyDonationManager() {
+        require(hasRole(DONATION_MANAGER_ROLE, msg.sender), "Not a donation manager");
+        _;
+    }
+    
+    constructor(
+        address _sponsorVault,
+        address payable _caritasWallet,
+        address _admin
+    ) {
+        require(_sponsorVault != address(0), "Invalid sponsor vault");
+        require(_caritasWallet != address(0), "Invalid caritas wallet");
+        
+        sponsorVault = ISolidarySponsorVault(_sponsorVault);
+        caritasWallet = _caritasWallet;
+        
+        _grantRole(DEFAULT_ADMIN_ROLE, _admin);
+        _grantRole(DONATION_MANAGER_ROLE, _admin);
+    }
+    
+    /**
+     * @dev Dona MATIC a Caritas con messaggio opzionale
+     * @param message Messaggio della donazione
+     */
+    function donateToCaritas(string memory message) external payable nonReentrant {
+        require(msg.value > 0, "Donation must be > 0");
+        require(bytes(message).length <= 500, "Message too long");
+        
+        address donor = msg.sender;
+        uint256 amount = msg.value;
+        
+        // Update statistics
+        if (donorTotalAmount[donor] == 0) {
+            totalDonors++;
+        }
+        donorTotalAmount[donor] += amount;
+        donorCount[donor]++;
+        totalDonations += amount;
+        
+        // Store donation record
+        uint256 donationId = donations.length;
+        donations.push(Donation({
+            donor: donor,
+            amount: amount,
+            message: message,
+            timestamp: block.timestamp
+        }));
+        
+        // Log sponsorship in SponsorVault (if we have permission)
+        try sponsorVault.mintSponsorToken(
+            donor, 
+            string(abi.encodePacked("Caritas Donation: ", _uint2str(amount), " MATIC - ", message))
+        ) {
+            // Success - logged in sponsor vault
+        } catch {
+            // Continue even if sponsor vault logging fails
+        }
+        
+        // Transfer to Caritas
+        (bool success, ) = caritasWallet.call{value: amount}("");
+        require(success, "Transfer to Caritas failed");
+        
+        emit DonationReceived(donor, amount, message, donationId);
+    }
+    
+    /**
+     * @dev Aggiorna l'indirizzo wallet di Caritas
+     * @param _newCaritasWallet Nuovo indirizzo wallet
+     */
+    function updateCaritasWallet(address payable _newCaritasWallet) 
+        external 
+        onlyRole(DEFAULT_ADMIN_ROLE) 
+    {
+        require(_newCaritasWallet != address(0), "Invalid wallet address");
+        
+        address oldWallet = caritasWallet;
+        caritasWallet = _newCaritasWallet;
+        
+        emit CaritasWalletUpdated(oldWallet, _newCaritasWallet);
+    }
+    
+    /**
+     * @dev Ottiene il numero totale di donazioni
+     */
+    function getTotalDonationsCount() external view returns (uint256) {
+        return donations.length;
+    }
+    
+    /**
+     * @dev Ottiene i dettagli di una donazione specifica
+     * @param donationId ID della donazione
+     */
+    function getDonation(uint256 donationId) 
+        external 
+        view 
+        returns (address donor, uint256 amount, string memory message, uint256 timestamp) 
+    {
+        require(donationId < donations.length, "Invalid donation ID");
+        
+        Donation storage donation = donations[donationId];
+        return (donation.donor, donation.amount, donation.message, donation.timestamp);
+    }
+    
+    /**
+     * @dev Ottiene le statistiche di un donatore
+     * @param donor Indirizzo del donatore
+     */
+    function getDonorStats(address donor) 
+        external 
+        view 
+        returns (uint256 totalAmount, uint256 donationCount) 
+    {
+        return (donorTotalAmount[donor], donorCount[donor]);
+    }
+    
+    /**
+     * @dev Funzione di emergenza per withdraw (solo admin)
+     */
+    function emergencyWithdraw() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No funds to withdraw");
+        
+        (bool success, ) = caritasWallet.call{value: balance}("");
+        require(success, "Emergency withdraw failed");
+    }
+    
+    /**
+     * @dev Converte uint256 in stringa
+     */
+    function _uint2str(uint256 _i) internal pure returns (string memory) {
+        if (_i == 0) {
+            return "0";
+        }
+        uint256 j = _i;
+        uint256 len;
+        while (j != 0) {
+            len++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(len);
+        uint256 k = len;
+        while (_i != 0) {
+            k = k - 1;
+            uint8 temp = (48 + uint8(_i - _i / 10 * 10));
+            bytes1 b1 = bytes1(temp);
+            bstr[k] = b1;
+            _i /= 10;
+        }
+        return string(bstr);
+    }
+    
+    /**
+     * @dev Receive function per donazioni dirette
+     */
+    receive() external payable {
+        donateToCaritas("Direct donation");
+    }
+}

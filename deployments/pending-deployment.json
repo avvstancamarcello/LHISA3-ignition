@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-11-01T20:14:41.898Z",
+  "deployer": "0x8495B3f7493263685fFcDA2602fFfF349d4eD3B8",
+  "balance": "0.007986839234426221",
+  "estimatedCost": "0.0000117899230548",
+  "gasEstimate": "2698575",
+  "gasPrice": "4368944",
+  "contractParams": {
+    "admin": "0x8495B3f7493263685fFcDA2602fFfF349d4eD3B8",
+    "baseURI": "https://ipfs.io/ipfs/",
+    "name": "OceanManga Comics NFT",
+    "symbol": "COMICS",
+    "royaltyReceiver": "0x8495B3f7493263685fFcDA2602fFfF349d4eD3B8",
+    "royaltyFee": 500
+  },
+  "security": {
+    "roles": {
+      "admin": "0xec519fc6eb527db875e9a34e1bbacdc50c2abc03faa187ff60569f0d533f69b9",
+      "minter": "0x07ddfdf24daa0176092e6b15e2de052be3e76c352d2f394c152c7e51b6fe9aac",
+      "manager": "0x3e8e447690af5287b7008fa9085d8024172ab40e6aa073f7c053b3f2af6e07e6"
+    },
+    "noDefaultAdminRole": true
+  },
+  "orchestrator": "0xf0D90454C98A0AE934e9DB1B316FF1608C4E9DEf"
+}

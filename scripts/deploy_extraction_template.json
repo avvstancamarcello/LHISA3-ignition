@@ -1,0 +1,27 @@
+{
+  "contracts_deployed": [],
+  "orchestrator_state": {
+    "orchestrator_address": "",
+    "registered_contracts": []
+  },
+  "wallets": {
+    "deployer": "",
+    "multisig": "",
+    "charity": "",
+    "treasury": ""
+  },
+  "rules_and_params": {
+    "revenue_split": { "holder_share": 55, "protocol_share": 45 },
+    "charity_pct": 2.5,
+    "royalties_pct": 2.5
+  },
+  "duplicates_check": {
+    "duplicate_contracts": []
+  },
+  "deploy_recommendations": {
+    "to_deploy": [],
+    "to_skip": [],
+    "to_upgrade": []
+  },
+  "risks_and_issues": []
+}

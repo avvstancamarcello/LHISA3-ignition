@@ -1,3 +1,7 @@
+    /// @notice Restituisce il ruolo manager per la governance esterna
+    function MANAGER_ROLE() public pure returns (bytes32) {
+        return keccak256("COSMIX_MANAGER_ROLE");
+    }
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.29;
 
@@ -10,7 +14,11 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract CosmixSolidaryToken is Initializable, ERC20Upgradeable, AccessControlUpgradeable, UUPSUpgradeable {
+/// @title COSMIX Protocol Token (ERC20)
+/// @notice Token fungibile principale dell'ecosistema LunaComics
+contract CosmixProtocolToken is Initializable, ERC20Upgradeable, AccessControlUpgradeable, UUPSUpgradeable {
+    // Emergency Role
+    bytes32 public constant EMERGENCY_ROLE = keccak256("EMERGENCY_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("COSMIX_MINTER_ROLE");
     bytes32 public constant MANAGER_ROLE = keccak256("COSMIX_MANAGER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("COSMIX_UPGRADER_ROLE");
@@ -21,17 +29,28 @@ contract CosmixSolidaryToken is Initializable, ERC20Upgradeable, AccessControlUp
         uint256 initialSupply,
         address treasury
     ) public initializer {
-        __ERC20_init("Cosmix Solidary Token", "COSMIX");
-        __AccessControl_init();
-        __UUPSUpgradeable_init();
+    __ERC20_init("COSMIX Protocol Token", "COSMIX");
+    __AccessControl_init();
+    __UUPSUpgradeable_init();
 
-        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-        _grantRole(MINTER_ROLE, admin);
-        _grantRole(MANAGER_ROLE, admin);
-        _grantRole(UPGRADER_ROLE, admin);
+    require(admin != address(0), "Admin address cannot be zero");
 
-        _mint(treasury, initialSupply);
+    _grantRole(DEFAULT_ADMIN_ROLE, admin);
+    _grantRole(MINTER_ROLE, admin);
+    _grantRole(MANAGER_ROLE, admin);
+    _grantRole(UPGRADER_ROLE, admin);
+    // Assegna EMERGENCY_ROLE a wallet alternativo (modifica qui l'indirizzo)
+    _grantRole(EMERGENCY_ROLE, admin); // Sostituisci con wallet alternativo se necessario
+
+    _mint(treasury, initialSupply);
     }
+    // Funzione di emergenza: può essere chiamata solo da EMERGENCY_ROLE
+    function emergencyPause() external onlyRole(EMERGENCY_ROLE) {
+        // Implementa la logica di emergenza (es. pause, revoke, ecc.)
+    }
+
+    // Sponsor wallet: puoi usare un wallet alternativo per pagare gas
+    // Basta connettere il contratto con ethers.getSigner(sponsorWallet)
 
     // Allows MANAGER to grant MINTER_ROLE to orchestrator or other contracts
     function grantMinterRole(address orchestrator) external onlyRole(MANAGER_ROLE) {

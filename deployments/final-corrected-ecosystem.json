@@ -1,0 +1,28 @@
+{
+  "network": "base",
+  "timestamp": "2025-11-01T20:20:45.770Z",
+  "status": "DEPLOYMENT_COMPLETE_CORRECTED",
+  "contracts": {
+    "comicsNFT": "0x771800D146F7d7B0D7C79669512B30A2fA190255",
+    "ft": "0xF8d5a00Ca91D46c07614208C346c49a09409D094",
+    "orchestrator": "0xf0D90454C98A0AE934e9DB1B316FF1608C4E9DEf",
+    "impactTracker": "0x20e63Ac004aA0997CC2bE7B8bB4419b9385C4689"
+  },
+  "branding": {
+    "name": "OceanManga Comics NFT",
+    "symbol": "COMICS",
+    "corrected": true,
+    "previousSymbol": "OMNFTS"
+  },
+  "security": {
+    "customRolesOnly": true,
+    "noDefaultAdminRole": true,
+    "ownerHasAllRoles": true,
+    "orchestratorConnected": true
+  },
+  "wallets": {
+    "owner": "0x8495B3f7493263685fFcDA2602fFfF349d4eD3B8",
+    "charity": "0xf84eb8B95407f04Dee8fF9acaC0e0AC7231bAb2A"
+  },
+  "finalBalance": "0.002634483633868369"
+}

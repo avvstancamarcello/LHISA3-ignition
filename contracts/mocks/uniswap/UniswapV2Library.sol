@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.6.6;
 
-import './interfaces/IUniswapV2Factory.sol';
-import './interfaces/IUniswapV2Pair.sol';
+import './interfaces/IUniswapV2Factory_0_6.sol';
+import './interfaces/IUniswapV2Pair_0_6.sol';
 
 library UniswapV2Library {
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
