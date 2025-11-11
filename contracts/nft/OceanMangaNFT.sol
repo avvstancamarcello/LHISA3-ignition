@@ -3,7 +3,6 @@ pragma solidity ^0.8.29;
 
 // © Copyright Marcello Stanca - Italy - Florence. Author and owner of the Solidary.it ecosystem and this smart contract. The ecosystem and its logical components (.sol files and scripts) are protected by copyright.
 
-
 /**
  * OceanMangaNFT (ERC1155 Upgradeable)
  *
@@ -68,8 +67,8 @@ contract OceanMangaNFT is
     ISolidaryOrchestratorReadable public orchestrator;
 
     // Identità collezione (per UI/marketplaces)
-    string public name;   // "OceanManga"
-    string public symbol; // "OCEAN"
+        string public name;   // "OceanManga"
+        string public symbol; // "MANGA"
 
     // CIDs IPFS (pointer on-chain, dati off-chain)
     mapping(uint256 => string) public tokenIPFSCIDs;   // metadata JSON (es. ipfs://CID/metadata.json)
@@ -88,20 +87,17 @@ contract OceanMangaNFT is
     constructor() {
         _disableInitializers();
     }
-
     /**
-     * @param admin              address con DEFAULT_ADMIN_ROLE
-     * @param initialURI         URI base ERC1155 (può essere vuoto o "ipfs://CID/{id}.json")
-     * @param _name              "OceanManga"
-     * @param _symbol            "OCEAN"
-     * @param royaltyReceiver    destinatario royalties di default (treasury)
-     * @param royaltyFeeNumerator fee in basis points (es. 500 = 5%)
+    * @param admin              address con DEFAULT_ADMIN_ROLE
+    * @param initialURI         URI base ERC1155 (può essere vuoto o "ipfs://CID/{id}.json")
+    * @param royaltyReceiver    destinatario royalties di default (treasury)
+    * @param royaltyFeeNumerator fee in basis points (es. 500 = 5%)
      */
     function initialize(
         address admin,
         string calldata initialURI,
-        string calldata _name,
-        string calldata _symbol,
+    // string calldata _name, // unused
+    // string calldata _symbol, // unused
         address royaltyReceiver,
         uint96 royaltyFeeNumerator
     ) public initializer {
@@ -115,8 +111,8 @@ contract OceanMangaNFT is
 
         require(admin != address(0), "Admin address cannot be zero");
 
-        name = _name;
-        symbol = _symbol;
+        name = "OceanManga";
+        symbol = "MANGA";
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(MINTER_ROLE, admin);
@@ -164,7 +160,7 @@ contract OceanMangaNFT is
     }
 
     function mint(address to, uint256 id, uint256 amount, bytes calldata data)
-    external payable
+        external payable
     {
         _mint(to, id, amount, data);
     }

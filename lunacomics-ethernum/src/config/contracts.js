@@ -6,10 +6,9 @@ export const CONTRACT_ADDRESSES = {
     SponsorVault: "0xB19Ee3A16554d339111028fe3a76fEE5AE45E8A3"
   },
   8453: { // Base - DEPLOYED AND ACTIVE
-    OceanMangaOrchestrator: "0x361eDa57Cd71C976B638fEC20256a433107c9282",
-    // Note: NFT/FT use mock addresses in orchestrator for now
-    LunaComicsFT: "0x0000000000000000000000000000000000000002", // Mock
-    OceanMangaNFT: "0x0000000000000000000000000000000000000001"  // Mock
+    OceanMangaOrchestrator: "0xe062015E8284344750Aa02956B77CFd5A952Fb08", // Last deployed orchestrator
+    LunaComicsFT: "0x828fFB61A666e86860482D79620A23DD990eE3F8", // Real FT proxy
+    OceanMangaNFT: "0x0FA3668c23017D6Eb4a07A265c0d8849095f1323"  // Real NFT contract
   }
 };
 
@@ -65,7 +64,7 @@ export const ORCHESTRATOR_ABI = [
   },
   {
     "inputs": [],
-    "name": "charity",
+    "name": "charityFund",
     "outputs": [{"name": "", "type": "address"}],
     "stateMutability": "view",
     "type": "function"

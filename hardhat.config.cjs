@@ -21,76 +21,59 @@ module.exports = {
       {
         version: "0.8.29",
         settings: {
-          optimizer: {
-            enabled: true,
-            runs: 1000
-          },
-          viaIR: true,  // Required to avoid stack too deep
+          optimizer: { enabled: true, runs: 1000 },
+          viaIR: true
         }
       },
       {
         version: "0.6.6",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 200
-          },
-        }
+        settings: { optimizer: { enabled: true, runs: 200 } }
       },
       {
         version: "0.6.2",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 200
-          },
-        }
+        settings: { optimizer: { enabled: true, runs: 200 } }
       },
       {
         version: "0.5.16",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 200
-          },
-        }
+        settings: { optimizer: { enabled: true, runs: 200 } }
       }
     ]
   },
   networks: {
-    localhost: {
-      url: "http://127.0.0.1:8545"
-    },
+    localhost: { url: "http://127.0.0.1:8545" },
     base: {
       url: process.env.BASE_RPC_URL || "https://mainnet.base.org",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       gas: 10000000,
       gasPrice: 2000000000,
+      timeout: 240000 // 4 minutes
     },
     base_sepolia: {
       url: process.env.BASE_SEPOLIA_RPC || "https://sepolia.base.org",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       gas: 10000000,
       gasPrice: 2000000000,
+      timeout: 240000
     },
-    hardhat: {
-      chainId: 31337,
-      allowUnlimitedContractSize: true
-    },
+    hardhat: { chainId: 31337, allowUnlimitedContractSize: true },
     polygon: {
-      url: process.env.POLYGON_RPC_URL || "https://polygon-rpc.com",
+      url: process.env.POLYGON_RPC_URL || "https://proportionate-dry-brook.matic.quiknode.pro/752b1e43a682209ddc19a49978c10acac9458739",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 137,
       gasPrice: 200000000000, // 200 Gwei legacy gas price
-      maxFeePerGas: 500000000000, // 500 Gwei max fee (increased)
-      maxPriorityFeePerGas: 100000000000, // 100 Gwei priority fee (increased)
+      maxFeePerGas: 500000000000,
+      maxPriorityFeePerGas: 100000000000,
+      timeout: 240000
     }
   },
-  etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY || "API_KEY"
-  },
+  etherscan: { apiKey: process.env.ETHERSCAN_API_KEY || "API_KEY" },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
-    currency: "Polygon Ecosystem Token",
+    currency: "ETH", // Mostra ETH come valuta del gas
+  },
+  // Indirizzi proxy già deployati per evitare deploy multipli
+  deployedContracts: {
+    OceanMangaNFT: "0x0FA3668c23017D6Eb4a07A265c0d8849095f1323",
+    CosmicsProtocolToken: "0x828fFB61A666e86860482D79620A23DD990eE3F8"
   }
-}
+};

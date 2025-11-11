@@ -2,6 +2,7 @@ import { useState } from 'react'
 import SimpleWalletConnect from './components/SimpleWalletConnect'
 import SimplePhotoMint from './components/SimplePhotoMint'
 import SimpleNetworkInfo from './components/SimpleNetworkInfo'
+import MintForm from './components/MintForm.jsx'
 import './App.css'
 
 function App() {
@@ -16,7 +17,8 @@ function App() {
 
       <main className="app-main">
         <SimpleWalletConnect />
-        <SimplePhotoMint />
+    <SimplePhotoMint />
+    <MintForm />
         <SimpleNetworkInfo />
       </main>
 

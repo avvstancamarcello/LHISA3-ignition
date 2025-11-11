@@ -1,19 +1,18 @@
 {
-  "timestamp": "2025-11-06T20:12:05.423Z",
+  "timestamp": "2025-11-09T14:37:53.487Z",
   "network": "base",
-  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "deployer": "0x8495B3f7493263685fFcDA2602fFfF349d4eD3B8",
   "wallets": {
-    "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    "creator": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "deployer": "0x8495B3f7493263685fFcDA2602fFfF349d4eD3B8",
+    "creator": "0x8495B3f7493263685fFcDA2602fFfF349d4eD3B8",
     "charity": "0xf84eb8B95407f04Dee8fF9acaC0e0AC7231bAb2A",
     "charityAlias": "caritasinternational.cb.id"
   },
   "contracts": {
-    "OceanMangaNFT": "0x4b6aB5F819A515382B0dEB6935D793817bB4af28",
-    "LunaComicsFT": "0xCace1b78160AE76398F486c8a18044da0d66d86D",
-    "OceanMangaOrchestrator": "0xD5ac451B0c50B9476107823Af206eD814a2e2580",
-    "TokenRouter": "0xc96304e3c037f81dA488ed9dEa1D8F2a48278a75",
-    "AdvancedSwapper": "0x34B40BA116d5Dec75548a9e9A8f15411461E8c70"
+    "OceanMangaNFT": "0x0FA3668c23017D6Eb4a07A265c0d8849095f1323",
+    "LunaComicsFT": "0x828fFB61A666e86860482D79620A23DD990eE3F8",
+    "OceanMangaOrchestrator": "0xe062015E8284344750Aa02956B77CFd5A952Fb08",
+    "TokenRouter": "0xDa737E1454B53AF16618887FDADC035582F5523e"
   },
   "supportedSwapTokens": {
     "WETH": "0x4200000000000000000000000000000000000006",

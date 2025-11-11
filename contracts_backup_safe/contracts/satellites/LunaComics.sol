@@ -553,4 +553,17 @@ contract LunaComics is
     {
         super._beforeTokenTransfer(from, to, amount);
     }
+
+    /**
+     * @dev Diagnostica: restituisce i ruoli attivi per un indirizzo
+     * @param account Indirizzo da verificare
+     * @return hasMinter true se ha MINTER_ROLE
+     * @return hasManager true se ha MANAGER_ROLE
+     * @return hasAdmin true se ha DEFAULT_ADMIN_ROLE
+     */
+    function getRoles(address account) external view returns (bool hasMinter, bool hasManager, bool hasAdmin) {
+        hasMinter = hasRole(MINTER_ROLE, account);
+        hasManager = hasRole(MANAGER_ROLE, account);
+        hasAdmin = hasRole(DEFAULT_ADMIN_ROLE, account);
+    }
 }

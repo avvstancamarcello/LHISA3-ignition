@@ -275,6 +275,90 @@ await contract.renounceRole(DEFAULT_ADMIN_ROLE, deployer.address);
 
 > Consiglio: imposta il multisig come owner/admin subito dopo il deploy e prima di depositare fondi o abilitare funzioni sensibili.
 
+## Sanity-check post-deploy (Base)
+
+Dopo il deploy, puoi verificare rapidamente che Orchestrator, NFT e FT siano allineati e che i ruoli MINTER siano corretti.
+
+- Verifica su Base (stampa PASS/FAIL ed esce con 0/1, utile in CI):
+
+```bash
+npm run sanity:base
+```
+
+- Riallinea automaticamente la configurazione agli indirizzi effettivi puntati dall’Orchestrator (aggiorna `.env`, `BASE_COMPLETE_ECOSYSTEM.json`, `NFT_ADDRESS.txt`, `TOKEN_ADDRESS.txt`) e poi verifica:
+
+```bash
+npm run sanity:base:fix
+npm run sanity:base
+```
+
+Note:
+- Gli indirizzi vengono risolti in ordine: `BASE_COMPLETE_ECOSYSTEM.json` → variabili d’ambiente (`ORCHESTRATOR_ADDRESS`, `NFT_ADDRESS`, `FT_ADDRESS`) → `last-orchestrator.json`.
+- La verifica fa anche una `staticCall` di `mintPhotoCombo` come soft-check (può mostrare ⚠️ se mancano le condizioni economiche, senza bloccare il PASS).
+- Evita di passare flag custom con `npx hardhat run ...` (Hardhat HH305). Usa gli script npm qui sopra, che invocano direttamente Node con `HARDHAT_NETWORK=base`.
+
+## Upgrade FT (UUPS)
+
+Aggiorna il proxy del token fungibile (CosmixProtocolToken) per abilitare il mint con ETH (`mintWithEth`) e il rate configurabile `tokensPerEth`.
+
+1) Esegui l’upgrade su Base (usa FT_ADDRESS da `.env` o `BASE_COMPLETE_ECOSYSTEM.json`):
+
+```bash
+npm run upgrade:ft:base
+```
+
+Opzionale: imposta un rate custom prima di eseguire lo script (default = 1000 token/ETH):
+
+```bash
+export FT_TOKENS_PER_ETH=1000
+npm run upgrade:ft:base
+```
+
+2) Dry-run post-upgrade (static call)
+
+Lo script tenta una chiamata `mintWithEth.staticCall` con un piccolo importo (default 0.001 ETH): se il signer non ha il `MINTER_ROLE`, vedrai un warning (soft) perché la funzione è protetta. Per testare su testnet/fork, assegna temporaneamente il `MINTER_ROLE` al signer e ripeti.
+
+Script disponibili anche per Base Sepolia:
+
+```bash
+npm run upgrade:ft:sepolia
+```
+
+## Verifica Upgrade FT
+
+Se dopo l'upgrade le nuove funzioni non appaiono nell'ABI (es. `tokensPerEth`, `mintWithEth`), usa lo script di verifica per individuare la causa:
+
+```bash
+npm run verify:ft:base
+```
+
+Lo script esegue:
+- Lettura indirizzo proxy (da `FT_ADDRESS` o `BASE_COMPLETE_ECOSYSTEM.json`)
+- Recupero indirizzo implementazione (slot ERC1967)
+- Dimensione e hash del bytecode implementazione
+- Elenco funzioni ABI locali (FQN) e presenza su proxy
+- Static call diagnostica di `tokensPerEth` e (se presente) `mintWithEth`
+
+Output PASS se tutte le nuove funzioni sono esposte via proxy, altrimenti FAIL con possibili cause e suggerimenti (ricompilazione, percorso sorgente errato, implementazione non aggiornata).
+
+Per Base Sepolia:
+```bash
+npm run verify:ft:sepolia
+```
+
+In caso di FAIL tipici:
+1. Esegui `npx hardhat clean && npx hardhat compile`
+2. Conferma che il file `contracts/ft/CosmixProtocolToken.sol` contiene `tokensPerEth` e `mintWithEth`
+3. Riesegui l'upgrade: `npm run upgrade:ft:base`
+4. Ripeti verifica.
+
+Se ancora assente:
+- Controlla eventuali duplicati del contratto in altre cartelle.
+- Verifica revert silenziosi (tenta upgrade con `--show-stack-traces` se personalizzi lo script).
+- Confronta l'hash del bytecode implementazione pre e post upgrade.
+
+L'exit code 1 dello script consente bloccare pipeline CI/CD in caso di upgrade non riuscito.
+
 ## References
 - John Campbell, "The Power of Myth"
 - Genesis, Old Testament

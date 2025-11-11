@@ -4,6 +4,22 @@
   "description": "Solidary Ecosystem Etic ",
   "author": "Marcello Stanca  Firenze",
   "license": "UNLICENSED",
+  "scripts": {
+    "sanity": "node scripts/sanity-check.cjs",
+    "sanity:hardhat": "HARDHAT_NETWORK=hardhat node scripts/sanity-check.cjs",
+    "sanity:base": "HARDHAT_NETWORK=base node scripts/sanity-check.cjs",
+    "sanity:base:fix": "HARDHAT_NETWORK=base node scripts/sanity-check.cjs --fix",
+    "upgrade:ft:base": "HARDHAT_NETWORK=base node scripts/upgrade-ft-mintWithEth.cjs",
+    "upgrade:ft:sepolia": "HARDHAT_NETWORK=base_sepolia node scripts/upgrade-ft-mintWithEth.cjs",
+    "ft:temp-minter:base": "HARDHAT_NETWORK=base node scripts/temp-minter-role.cjs",
+    "ft:temp-minter:sepolia": "HARDHAT_NETWORK=base_sepolia node scripts/temp-minter-role.cjs",
+    "verify:ft:base": "HARDHAT_NETWORK=base node scripts/verify-upgrade-ft.cjs",
+    "verify:ft:sepolia": "HARDHAT_NETWORK=base_sepolia node scripts/verify-upgrade-ft.cjs",
+    "roles:base": "HARDHAT_NETWORK=base node scripts/read-roles.cjs",
+    "roles:sepolia": "HARDHAT_NETWORK=base_sepolia node scripts/read-roles.cjs",
+    "mint:base": "HARDHAT_NETWORK=base node scripts/mint-orchestrator-test.cjs",
+    "mint:sepolia": "HARDHAT_NETWORK=base_sepolia node scripts/mint-orchestrator-test.cjs"
+  },
   "devDependencies": {
     "@ethereum-waffle/mock-contract": "^4.0.4",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
