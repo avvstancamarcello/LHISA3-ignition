@@ -1,0 +1,54 @@
+[
+  // ===== Base tokens già presenti =====
+  {"address": "0x3a51f2a377ea8b55faf3c671138a00503b031af3", "amount": "1000000000000000",    "symbol": "ALGORAND",    "decimals": 18, "network": "Base"},
+  {"address": "0x912CE59144191C1204E64559FE8253a0e49E6548", "amount": "1000000000000000000", "symbol": "ARB",         "decimals": 18, "network": "Arbitrum"},
+  {"address": "0xBA12222222228d8Ba445958a75a0704d566BF2C8", "amount": "1000000000000000000", "symbol": "BAL",         "decimals": 18, "network": "Ethereum"},
+  {"address": "0x226a2fa2556c48245e57cd1cba4c6c9e67077dd2", "amount": "1000000000000000",    "symbol": "BIO",         "decimals": 18, "network": "Base"},
+  {"address": "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22", "amount": "1000000000000000000", "symbol": "cbETH",       "decimals": 18, "network": "Ethereum"},
+  {"address": "0x514910771AF9Ca656af840dff83E8264EcF986CA", "amount": "1000000000000000000", "symbol": "LINK",        "decimals": 18, "network": "Ethereum"},
+  {"address": "0xb125e6687d4313864e53df431d5425969c15eb2f", "amount": "10000000000000000",   "symbol": "cUSDCv3",     "decimals": 18, "network": "Ethereum"},
+  {"address": "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb", "amount": "1000000000000000",    "symbol": "DAI",         "decimals": 18, "network": "Ethereum"},
+  {"address": "0xAf783f67a83754b5989256fA180534232dF83a0a", "amount": "1000000000000000000", "symbol": "DST",         "decimals": 18, "network": "Polygon"},
+  {"address": "0x4200000000000000000000000000000000000006", "amount": "1000000000000000000", "symbol": "ETHBRIDGE",   "decimals": 18, "network": "Base"},
+  {"address": "0x1cff25b095cf6595afabe35dd7e5348666e57c11", "amount": "1000000000000000000", "symbol": "ETHU",        "decimals": 18, "network": "Base"},
+  {"address": "0xe868c3d83ec287c01bcb533a33d197d9bfa79dad", "amount": "1000000000000000000", "symbol": "MATICU",      "decimals": 18, "network": "Polygon"},
+  {"address": "0x6cbb2598881940d08d5ea3fa8f557e02996e1031", "amount": "1000000000000000",    "symbol": "OOE",         "decimals": 18, "network": "Ethereum"},
+  {"address": "0x4200000000000000000000000000000000000042", "amount": "1000000000000000000", "symbol": "OP",          "decimals": 18, "network": "Optimism"},
+  {"address": "0xD228edaA3BD33D604f5561e187782aD9D5B65571", "amount": "1000000000000000",    "symbol": "SENTINEL",    "decimals": 18, "network": "Base"},
+  {"address": "0x1cff25b095cf6595afabe35dd7e5348666e57c11", "amount": "1000000000000000",    "symbol": "TOKEN",       "decimals": 18, "network": "Base"},
+  {"address": "0x18794e4168dc77f0ee3963ef3c3b4460b33cfb5b", "amount": "1000000000000000",    "symbol": "SLDY",        "decimals": 18, "network": "Polygon"},
+  {"address": "0x321974e059c54d009eb57d77ea903d70e6edbef2", "amount": "1000000000000000",    "symbol": "SOLMUS",      "decimals": 18, "network": "Polygon"},
+  {"address": "0x12e96c2bfea6e835cf8dd38a5834fa61cf723736", "amount": "1000000000000000",    "symbol": "uDOGE",       "decimals": 18, "network": "Ethereum"},
+  {"address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "amount": "1000000000000",       "symbol": "USDC",        "decimals": 6,  "network": "Base"},
+  {"address": "0x46ae9BaB8CEA96610807a275EBD36f8e916b5C61", "amount": "1000000000000",       "symbol": "USDCBRIDGE",  "decimals": 6,  "network": "Base"},
+  {"address": "0xD89ea85ee5dD2027dbC29Fbc198DC197D44c3d70", "amount": "1000000000000",       "symbol": "USDCMATIC",   "decimals": 6,  "network": "Polygon"},
+  {"address": "0x9b8df6e244526ab5f6e6400d331db28c8fdddb55", "amount": "1000000000000000",    "symbol": "USOL",        "decimals": 18, "network": "Polygon"},
+
+  // ===== Arbitrum =====
+  {"address": "0x15b7c0c907e4c6b9adaaaabc300c08991d6cea05", "amount": "1000000000000000000", "symbol": "GMX",         "decimals": 18, "network": "Arbitrum"},
+  {"address": "0x539bdE0d7Dbd336b79148AA742883198BBF60342", "amount": "1000000000000000000", "symbol": "MAGIC",       "decimals": 18, "network": "Arbitrum"},
+
+  // ===== Optimism =====
+  {"address": "0x87063f0875a85efefa8e25459f07f96c58db3b94", "amount": "1000000000000000000", "symbol": "SNX",         "decimals": 18, "network": "Optimism"},
+  {"address": "0x3c8D8ef20d957A7f31Ae8dD1974C9CaA5DE6895c", "amount": "1000000000000000000", "symbol": "VELO",        "decimals": 18, "network": "Optimism"},
+
+  // ===== Avalanche (C-Chain) =====
+  {"address": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7", "amount": "1000000000000000000", "symbol": "WAVAX",       "decimals": 18, "network": "Avalanche"},
+  {"address": "0x6e84A6216eA6dACC71eE8e6b05bD1f550c3aC7f5", "amount": "1000000000000000000", "symbol": "JOE",         "decimals": 18, "network": "Avalanche"},
+
+  // ===== zkSync Era =====
+  {"address": "0x5aea5775959fbc2557cc8789bc1bf90a239d9a91", "amount": "1000000000000000000", "symbol": "WETH_zk",     "decimals": 18, "network": "zkSync"},
+  {"address": "0x493257fd37edB34451f62EDf8D2a0C418852Aa5C", "amount": "1000000",             "symbol": "USDT_zk",     "decimals": 6,  "network": "zkSync"},
+  {"address": "0xa49d7499271e6dbe2c8e01d3665a8f6f58f1c5b5", "amount": "1000000000000000000", "symbol": "MUTE",        "decimals": 18, "network": "zkSync"},
+
+  // ===== Multi-chain/EVM: Top Governance & DeFi tokens =====
+  {"address": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", "amount": "1000000000000000000", "symbol": "UNI",         "decimals": 18, "network": "Ethereum"},
+  {"address": "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DdAE9", "amount": "1000000000000000000", "symbol": "AAVE",        "decimals": 18, "network": "Ethereum"},
+  {"address": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", "amount": "100000000",           "symbol": "WBTC",        "decimals": 8,  "network": "Ethereum"},
+  {"address": "0xD533a949740bb3306d119CC777fa900bA034cd52", "amount": "1000000000000000000", "symbol": "CRV",         "decimals": 18, "network": "Ethereum"},
+  {"address": "0x6B3595068778DD592e39A122f4f5a5cf09C90fE2", "amount": "1000000000000000000", "symbol": "SUSHI",       "decimals": 18, "network": "Ethereum"},
+  {"address": "0xc00e94Cb662C3520282E6f5717214004A7f26888", "amount": "1000000000000000000", "symbol": "COMP",        "decimals": 18, "network": "Ethereum"},
+  {"address": "0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82", "amount": "1000000000000000000", "symbol": "CAKE",        "decimals": 18, "network": "BNB Chain"},
+  {"address": "0xB8c77482e45F1F44De1745F52C74426C631bDD52", "amount": "1000000000000000000", "symbol": "BNB",         "decimals": 18, "network": "BNB Chain"},
+  {"address": "0x4B0F1812e5Df2A09796481Ff14017e6005508003", "amount": "1000000000000000000", "symbol": "TWT",         "decimals": 18, "network": "BNB Chain"}
+]
