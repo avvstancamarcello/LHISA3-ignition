@@ -8,6 +8,30 @@ const fs = require('fs');
 async function main() {
   console.log("🎯 DEPLOY MINIMAL NFT/FT CONTRACTS ON BASE");
   console.log("═══════════════════════════════════════════════");
+  // DEBUG SNIPPET: Diagnosi ruoli e permessi deployer su CosmixProtocolToken (FT)
+  console.log("== DEBUG: Diagnostica ruoli su FT ==");
+  const minterRoleHash = await ft.MINTER_ROLE();    // bytes32 hash - COSMIX_MINTER_ROLE
+  const managerRoleHash = await ft.MANAGER_ROLE();  // bytes32 hash - COSMIX_MANAGER_ROLE
+  const adminRoleHash = await ft.DEFAULT_ADMIN_ROLE(); // bytes32 hash - DEFAULT_ADMIN_ROLE
+
+  const isMinter = await ft.hasRole(minterRoleHash, deployer.address);
+  const isManager = await ft.hasRole(managerRoleHash, deployer.address);
+  const isAdmin = await ft.hasRole(adminRoleHash, deployer.address);
+
+  console.log("Deployer address:", deployer.address);
+  console.log("Deployer is COSMIX_MINTER_ROLE?  ", isMinter ? "✅" : "❌");
+  console.log("Deployer is COSMIX_MANAGER_ROLE? ", isManager ? "✅" : "❌");
+  console.log("Deployer is DEFAULT_ADMIN_ROLE?  ", isAdmin ? "✅" : "❌");
+
+  // Se vuoi vedere i valori hash effettivi
+  console.log("Hash COSMIX_MINTER_ROLE:", minterRoleHash);
+  console.log("Hash COSMIX_MANAGER_ROLE:", managerRoleHash);
+  console.log("Hash DEFAULT_ADMIN_ROLE:", adminRoleHash);
+
+  // Se vuoi forzare uno stop in caso di permesso mancante
+  if (!isManager) {
+    throw new Error("Deployer does NOT have COSMIX_MANAGER_ROLE! Cannot grant roles on FT.");
+    }  
 
   try {
     // Helper: grant role se mancante, con fee EIP-1559 e retry una volta
@@ -138,6 +162,25 @@ async function main() {
         await nft.waitForDeployment();
         nftAddress = await nft.getAddress();
         console.log("✅ NFT proxy deployed & initialized:", nftAddress);
+        // DEBUG SNIPPET: Diagnosi ruoli e permessi deployer su OceanMangaNFT (NFT)
+     console.log("== DEBUG: Diagnostica ruoli su NFT ==");
+
+     const nftMinterRoleHash = await nft.MINTER_ROLE();          // bytes32 hash - MINTER_ROLE
+     const nftAdminRoleHash  = await nft.DEFAULT_ADMIN_ROLE();   // bytes32 hash - DEFAULT_ADMIN_ROLE
+
+     const isNftMinter = await nft.hasRole(nftMinterRoleHash, deployer.address);
+     const isNftAdmin  = await nft.hasRole(nftAdminRoleHash, deployer.address);
+
+     console.log("Deployer address:", deployer.address);
+     console.log("Deployer is NFT MINTER_ROLE?  ", isNftMinter ? "✅" : "❌");
+     console.log("Deployer is NFT DEFAULT_ADMIN_ROLE? ", isNftAdmin ? "✅" : "❌");
+
+     console.log("Hash NFT MINTER_ROLE:", nftMinterRoleHash);
+     console.log("Hash NFT DEFAULT_ADMIN_ROLE:", nftAdminRoleHash);
+
+     if (!isNftAdmin) {
+      throw new Error("Deployer does NOT have DEFAULT_ADMIN_ROLE on NFT! Cannot grant roles on NFT.");
+     }
         // Deploy FT
         console.log("\n🪙 Deploying CosmicsProtocolToken...");
         const FT = await ethers.getContractFactory("CosmixProtocolToken");
