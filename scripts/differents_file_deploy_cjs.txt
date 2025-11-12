@@ -1,0 +1,563 @@
+2a3
+> "use strict";
+9a11,34
+>   // DEBUG SNIPPET: Diagnosi ruoli e permessi deployer su CosmixProtocolToken (FT)
+>   console.log("== DEBUG: Diagnostica ruoli su FT ==");
+>   const minterRoleHash = await ft.MINTER_ROLE();    // bytes32 hash - COSMIX_MINTER_ROLE
+>   const managerRoleHash = await ft.MANAGER_ROLE();  // bytes32 hash - COSMIX_MANAGER_ROLE
+>   const adminRoleHash = await ft.DEFAULT_ADMIN_ROLE(); // bytes32 hash - DEFAULT_ADMIN_ROLE
+> 
+>   const isMinter = await ft.hasRole(minterRoleHash, deployer.address);
+>   const isManager = await ft.hasRole(managerRoleHash, deployer.address);
+>   const isAdmin = await ft.hasRole(adminRoleHash, deployer.address);
+> 
+>   console.log("Deployer address:", deployer.address);
+>   console.log("Deployer is COSMIX_MINTER_ROLE?  ", isMinter ? "✅" : "❌");
+>   console.log("Deployer is COSMIX_MANAGER_ROLE? ", isManager ? "✅" : "❌");
+>   console.log("Deployer is DEFAULT_ADMIN_ROLE?  ", isAdmin ? "✅" : "❌");
+> 
+>   // Se vuoi vedere i valori hash effettivi
+>   console.log("Hash COSMIX_MINTER_ROLE:", minterRoleHash);
+>   console.log("Hash COSMIX_MANAGER_ROLE:", managerRoleHash);
+>   console.log("Hash DEFAULT_ADMIN_ROLE:", adminRoleHash);
+> 
+>   // Se vuoi forzare uno stop in caso di permesso mancante
+>   if (!isManager) {
+>     throw new Error("Deployer does NOT have COSMIX_MANAGER_ROLE! Cannot grant roles on FT.");
+>     }  
+11a37,70
+>     // Helper: grant role se mancante, con fee EIP-1559 e retry una volta
+>     async function grantIfMissing(contract, role, account, label) {
+>       const already = await contract.hasRole(role, account);
+>       if (already) {
+>         console.log(`ℹ️ ${label}: ruolo già presente su ${account}`);
+>         return true;
+>       }
+>       let gasLimit;
+>       try {
+>         gasLimit = await contract.estimateGas.grantRole(role, account);
+>       } catch {
+>         gasLimit = 200000n;
+>       }
+>       const fee = await ethers.provider.getFeeData();
+>       let maxFeePerGas = fee.maxFeePerGas || ethers.parseUnits("0.05", "gwei");
+>       let maxPriorityFeePerGas = fee.maxPriorityFeePerGas || ethers.parseUnits("0.02", "gwei");
+>       const tx = await contract.grantRole(role, account, { gasLimit, maxFeePerGas, maxPriorityFeePerGas });
+>       const rcpt = await tx.wait();
+>       const ok = await contract.hasRole(role, account);
+>       if (ok) {
+>         console.log(`✅ ${label}: ruolo assegnato (tx: ${tx.hash}, status: ${rcpt.status})`);
+>         return true;
+>       }
+>       // Retry con bump fee
+>       const fee2 = await ethers.provider.getFeeData();
+>       maxFeePerGas = (fee2.maxFeePerGas || maxFeePerGas) + ethers.parseUnits("0.02", "gwei");
+>       maxPriorityFeePerGas = (fee2.maxPriorityFeePerGas || maxPriorityFeePerGas) + ethers.parseUnits("0.01", "gwei");
+>       const tx2 = await contract.grantRole(role, account, { gasLimit, maxFeePerGas, maxPriorityFeePerGas });
+>       const rcpt2 = await tx2.wait();
+>       const ok2 = await contract.hasRole(role, account);
+>       if (!ok2) throw new Error(`${label}: ruolo non assegnato dopo retry (tx: ${tx2.hash})`);
+>       console.log(`✅ ${label}: ruolo assegnato al retry (tx: ${tx2.hash}, status: ${rcpt2.status})`);
+>       return true;
+>     }
+24,27c83,86
+<       let explorerUrl = "https://basescan.org/address/";
+<       let explorerName = "BaseScan";
+<       let tokenName = "COSMIX";
+<       if (process.env.HARDHAT_NETWORK === "polygon" || (hre && hre.network && hre.network.name === "polygon")) {
+---
+>   let explorerUrl = "https://basescan.org/address/";
+>   let explorerName = "BaseScan";
+>   let tokenName = "COSMIX";
+>   if (process.env.HARDHAT_NETWORK === "polygon" || (typeof hre !== "undefined" && hre.network && hre.network.name === "polygon")) {
+38c97,121
+<     // Usa indirizzi già deployati se forniti
+---
+>     // 1) Prova a riusare un Orchestrator esistente PRIMA di decidere NFT/FT
+>     const Orchestrator = await ethers.getContractFactory("OceanMangaOrchestrator");
+>     console.log("[DEBUG] OceanMangaOrchestrator bytecode length:", Orchestrator.bytecode.length / 2, "bytes");
+>     let orchestrator, orchestratorAddress;
+>     let routerAddress, swapperAddress;
+>     let swapper;
+> 
+>     if (process.env.ORCHESTRATOR_ADDRESS) {
+>       orchestratorAddress = process.env.ORCHESTRATOR_ADDRESS;
+>       orchestrator = await Orchestrator.attach(orchestratorAddress);
+>       console.log("✅ Orchestrator già deployato (ENV):", orchestratorAddress);
+>     } else if (fs.existsSync('last-orchestrator.json')) {
+>       try {
+>         const prev = JSON.parse(fs.readFileSync('last-orchestrator.json'));
+>         if (prev && prev.orchestrator) {
+>           orchestratorAddress = prev.orchestrator;
+>           orchestrator = await Orchestrator.attach(orchestratorAddress);
+>           console.log("♻️ Orchestrator recuperato da last-orchestrator.json:", orchestratorAddress);
+>         }
+>       } catch (e) {
+>         console.warn("[WARN] Impossibile leggere last-orchestrator.json. Procedo senza orchestrator.");
+>       }
+>     }
+> 
+>     // 2) Se ho un Orchestrator, preferisco i suoi indirizzi NFT/FT per evitare mismatch
+40,81c123,201
+<     if (process.env.NFT_ADDRESS && process.env.FT_ADDRESS) {
+<       nftAddress = process.env.NFT_ADDRESS;
+<       ftAddress = process.env.FT_ADDRESS;
+<       nft = await ethers.getContractAt("contracts/nft/OceanMangaNFT.sol:OceanMangaNFT", nftAddress);
+<       ft = await ethers.getContractAt("CosmixProtocolToken", ftAddress);
+<       console.log("✅ NFT proxy già deployato:", nftAddress);
+<       console.log("✅ FT proxy già deployato:", ftAddress);
+<     } else {
+<       // Deploy NFT
+<       console.log("\n🎨 Deploying OceanMangaNFT...");
+<       const NFT = await ethers.getContractFactory("contracts/nft/OceanMangaNFT.sol:OceanMangaNFT");
+<       console.log("🔧 Deploying NFT as UUPS proxy and initializing with deployer as admin...");
+<       nft = await upgrades.deployProxy(
+<         NFT,
+<         [
+<           process.env.OWNER_WALLET || deployer.address,
+<           "", // initialURI
+<           process.env.OWNER_WALLET || deployer.address, // royaltyReceiver (treasury)
+<           0 // royalty fee numerator (bps)
+<         ],
+<         { initializer: 'initialize', kind: 'uups' }
+<       );
+<       await nft.waitForDeployment();
+<       nftAddress = await nft.getAddress();
+<       console.log("✅ NFT proxy deployed & initialized:", nftAddress);
+<       // Deploy FT
+<       console.log("\n🪙 Deploying CosmicsProtocolToken...");
+<       const FT = await ethers.getContractFactory("CosmixProtocolToken");
+<       console.log("🔧 Deploying FT as UUPS proxy e inizializzando con nome 'Cosmics' e simbolo 'COSMICS'...");
+<       const initialSupply = ethers.parseUnits("1000000", 18);
+<       ft = await upgrades.deployProxy(
+<         FT,
+<         [
+<           deployer.address,
+<           initialSupply,
+<           deployer.address // treasury
+<         ],
+<         { initializer: 'initialize', kind: 'uups' }
+<       );
+<       await ft.waitForDeployment();
+<       ftAddress = await ft.getAddress();
+<       console.log("✅ FT proxy deployed & initialized:", ftAddress);
+---
+>     if (orchestratorAddress) {
+>       try {
+>         const orchNFT = await orchestrator.oceanMangaNFT();
+>         const orchFT = await orchestrator.lunaComicsFT();
+>         if (orchNFT && orchNFT !== ethers.ZeroAddress && orchFT && orchFT !== ethers.ZeroAddress) {
+>           nftAddress = orchNFT;
+>           ftAddress = orchFT;
+>           nft = await ethers.getContractAt("contracts/nft/OceanMangaNFT.sol:OceanMangaNFT", nftAddress);
+>           ft = await ethers.getContractAt("CosmixProtocolToken", ftAddress);
+>           console.log("✅ Reusing NFT from Orchestrator:", nftAddress);
+>           console.log("✅ Reusing FT from Orchestrator:", ftAddress);
+>         }
+>       } catch {}
+>     }
+> 
+>     // 3) Se non ho ancora NFT/FT, usa ENV oppure deploya nuovi
+>     if (!nftAddress || !ftAddress) {
+>       if (process.env.NFT_ADDRESS && process.env.FT_ADDRESS) {
+>         nftAddress = process.env.NFT_ADDRESS;
+>         ftAddress = process.env.FT_ADDRESS;
+>         nft = await ethers.getContractAt("contracts/nft/OceanMangaNFT.sol:OceanMangaNFT", nftAddress);
+>         ft = await ethers.getContractAt("CosmixProtocolToken", ftAddress);
+>         console.log("✅ NFT proxy già deployato:", nftAddress);
+>         console.log("✅ FT proxy già deployato:", ftAddress);
+>       } else {
+>         // Deploy NFT
+>         console.log("\n🎨 Deploying OceanMangaNFT...");
+>         const NFT = await ethers.getContractFactory("contracts/nft/OceanMangaNFT.sol:OceanMangaNFT");
+>         console.log("🔧 Deploying NFT as UUPS proxy and initializing with deployer as admin...");
+>         nft = await upgrades.deployProxy(
+>           NFT,
+>           [
+>             deployer.address, // admin
+>             "", // initialURI
+>             deployer.address, // royaltyReceiver (treasury)
+>             0 // royalty fee numerator (bps)
+>           ],
+>           { initializer: 'initialize', kind: 'uups' }
+>         );
+>         await nft.waitForDeployment();
+>         nftAddress = await nft.getAddress();
+>         console.log("✅ NFT proxy deployed & initialized:", nftAddress);
+>         // DEBUG SNIPPET: Diagnosi ruoli e permessi deployer su OceanMangaNFT (NFT)
+>      console.log("== DEBUG: Diagnostica ruoli su NFT ==");
+> 
+>      const nftMinterRoleHash = await nft.MINTER_ROLE();          // bytes32 hash - MINTER_ROLE
+>      const nftAdminRoleHash  = await nft.DEFAULT_ADMIN_ROLE();   // bytes32 hash - DEFAULT_ADMIN_ROLE
+> 
+>      const isNftMinter = await nft.hasRole(nftMinterRoleHash, deployer.address);
+>      const isNftAdmin  = await nft.hasRole(nftAdminRoleHash, deployer.address);
+> 
+>      console.log("Deployer address:", deployer.address);
+>      console.log("Deployer is NFT MINTER_ROLE?  ", isNftMinter ? "✅" : "❌");
+>      console.log("Deployer is NFT DEFAULT_ADMIN_ROLE? ", isNftAdmin ? "✅" : "❌");
+> 
+>      console.log("Hash NFT MINTER_ROLE:", nftMinterRoleHash);
+>      console.log("Hash NFT DEFAULT_ADMIN_ROLE:", nftAdminRoleHash);
+> 
+>      if (!isNftAdmin) {
+>       throw new Error("Deployer does NOT have DEFAULT_ADMIN_ROLE on NFT! Cannot grant roles on NFT.");
+>      }
+>         // Deploy FT
+>         console.log("\n🪙 Deploying CosmicsProtocolToken...");
+>         const FT = await ethers.getContractFactory("CosmixProtocolToken");
+>         console.log("🔧 Deploying FT as UUPS proxy e inizializzando con nome 'Cosmics' e simbolo 'COSMICS'...");
+>         const initialSupply = ethers.parseUnits("1000000", 18);
+>         ft = await upgrades.deployProxy(
+>           FT,
+>           [
+>             deployer.address,
+>             initialSupply,
+>             deployer.address // treasury
+>           ],
+>           { initializer: 'initialize', kind: 'uups' }
+>         );
+>         await ft.waitForDeployment();
+>         ftAddress = await ft.getAddress();
+>         console.log("✅ FT proxy deployed & initialized:", ftAddress);
+>       }
+93,117c213,224
+<     const Orchestrator = await ethers.getContractFactory("OceanMangaOrchestrator");
+<     console.log("[DEBUG] OceanMangaOrchestrator bytecode length:", Orchestrator.bytecode.length / 2, "bytes");
+<     let orchestrator, orchestratorAddress;
+<     try {
+<         // Calcola costo gas reale prima del deploy
+<         const gasLimit = 9000000;
+<         // Gas price di rete attuale (0.002 gwei)
+<         const gasPriceGwei = 0.002;
+<         const gasPriceWei = ethers.parseUnits(gasPriceGwei.toString(), "gwei");
+<         // Costo stimato in wei
+<         const estimatedCostWei = BigInt(gasLimit) * BigInt(gasPriceWei);
+<         // Saldo attuale del wallet
+<         const walletBalanceWei = await deployer.provider.getBalance(deployer.address);
+<         // Stampa info
+<         console.log(`[CHECK] Gas price di rete: ${gasPriceGwei} gwei`);
+<         console.log(`[CHECK] Gas limit stimato: ${gasLimit}`);
+<         console.log(`[CHECK] Costo stimato deploy: ${ethers.formatEther(estimatedCostWei)} ETH`);
+<         console.log(`[CHECK] Saldo wallet: ${ethers.formatEther(walletBalanceWei)} ETH`);
+<         if (walletBalanceWei < estimatedCostWei) {
+<           console.error("❌ Saldo insufficiente per il deploy dell'Orchestrator! Ricarica il wallet e riprova.");
+<           process.exitCode = 1;
+<           return;
+<         }
+<         // Usa solo gasLimit, lascia che la rete scelga il gasPrice
+<         console.log("[DEBUG] Deploying Orchestrator with network gas price");
+---
+>     // A questo punto, se orchestratorAddress non esiste, allora deploya un nuovo Orchestrator con gli indirizzi NFT/FT attuali
+>     if (!orchestratorAddress) {
+>       try {
+>         // Usa fee EIP-1559 della rete (fallback a 0.1 gwei se non disponibili)
+>         const fee = await ethers.provider.getFeeData();
+>         const maxFeePerGas = fee.maxFeePerGas || ethers.parseUnits("0.1", "gwei");
+>         const maxPriorityFeePerGas = fee.maxPriorityFeePerGas || ethers.parseUnits("0.01", "gwei");
+>         console.log(`[CHECK] maxFeePerGas: ${ethers.formatUnits(maxFeePerGas, "gwei")} gwei`);
+>         console.log(`[CHECK] maxPriorityFeePerGas: ${ethers.formatUnits(maxPriorityFeePerGas, "gwei")} gwei`);
+>         console.log("[DEBUG] Deploying Orchestrator (EIP-1559 fees)");
+> 
+>         // Non forziamo gasLimit: lasciamo stimare al nodo
+123c230
+<           { gasLimit: 9000000 }
+---
+>           { maxFeePerGas, maxPriorityFeePerGas }
+125,131c232,254
+<       console.log("[DEBUG] Deploy transaction sent, waiting for confirmation...");
+<       await orchestrator.waitForDeployment();
+<       orchestratorAddress = await orchestrator.getAddress();
+<       console.log("✅ New Orchestrator deployed:", orchestratorAddress);
+<     } catch (e) {
+<       console.error("[ERROR] Orchestrator deploy failed:", e);
+<       throw e;
+---
+> 
+>         const depTx = orchestrator.deploymentTransaction && orchestrator.deploymentTransaction();
+>         if (depTx && depTx.hash) console.log("[DEBUG] Deploy tx hash:", depTx.hash);
+>         console.log("[DEBUG] Deploy transaction sent, waiting for confirmation...");
+>         await orchestrator.waitForDeployment();
+>         orchestratorAddress = await orchestrator.getAddress();
+>         console.log("✅ New Orchestrator deployed:", orchestratorAddress);
+>         // Persisti l'indirizzo per evitare redeploy futuri
+>         fs.writeFileSync('last-orchestrator.json', JSON.stringify({ orchestrator: orchestratorAddress }, null, 2));
+>         console.log("[PERSIST] Saved orchestrator address to last-orchestrator.json");
+>       } catch (e) {
+>         console.error("[ERROR] Orchestrator deploy failed:", e);
+>         // Log aggiuntivo su fee data per diagnosi
+>         try {
+>           const fee2 = await ethers.provider.getFeeData();
+>           console.error("[DEBUG] feeData on error:", {
+>             maxFeePerGas: fee2.maxFeePerGas && fee2.maxFeePerGas.toString(),
+>             maxPriorityFeePerGas: fee2.maxPriorityFeePerGas && fee2.maxPriorityFeePerGas.toString(),
+>             gasPrice: fee2.gasPrice && fee2.gasPrice.toString(),
+>           });
+>         } catch {}
+>         throw e;
+>       }
+152,153c275,276
+<     FT_MINTER_ROLE = ethers.keccak256(ethers.toUtf8Bytes("COSMIX_MINTER_ROLE"));
+<     console.log("[DEBUG] FT MINTER_ROLE via keccak fallback (COSMIX_MINTER_ROLE)");
+---
+>     FT_MINTER_ROLE = ethers.keccak256(ethers.toUtf8Bytes("MINTER_ROLE"));
+>     console.log("[DEBUG] FT MINTER_ROLE via keccak fallback (MINTER_ROLE)");
+183a307,310
+>     const nftAdminRole2 = await nft.hasRole(DEFAULT_ADMIN_ROLE, deployer.address);
+>     if (!nftAdminRole2) throw new Error("Deployer missing DEFAULT_ADMIN_ROLE on NFT");
+>     await grantIfMissing(nft, MINTER_ROLE, orchestratorAddress, "NFT MINTER_ROLE → orchestrator");
+>     // Diagnostica ruoli FT (non interrompe se manca MANAGER/MINTER, solo log)
+185,190c312,317
+<       const nftTx = await nft.grantRole(MINTER_ROLE, orchestratorAddress);
+<       await nftTx.wait();
+<       console.log("✅ NFT minter role granted to orchestrator");
+<     } catch (err) {
+<       console.error("❌ Revert on NFT grantRole:", err);
+<       throw err;
+---
+>       if (ft.getRoles) {
+>         const [hasMinterFtDiag, hasManagerFtDiag, hasAdminFtDiag] = await ft.getRoles(orchestratorAddress);
+>         console.log(`🔎 FT Roles (diagnostic) on orchestrator: MINTER=${hasMinterFtDiag}, MANAGER=${hasManagerFtDiag}, ADMIN=${hasAdminFtDiag}`);
+>       }
+>     } catch (diagErr) {
+>       console.warn("[WARN] FT getRoles diagnostic failed:", diagErr.message);
+193c320
+<     // Grant MINTER_ROLE to orchestrator on FT contract
+---
+>     // Grant MINTER_ROLE to orchestrator on FT contract (usa admin di default)
+195,218c322,323
+<     try {
+<       const FT_MANAGER_ROLE = await ft.MANAGER_ROLE();
+<       const ftManagerRole = await ft.hasRole(FT_MANAGER_ROLE, deployer.address);
+<       console.log("  FT Manager Role (deployer):", ftManagerRole ? "✅" : "❌");
+<       if (!ftManagerRole) {
+<         console.log("🛠️ Assegno MANAGER_ROLE al deployer sul FT...");
+<         const FT_ADMIN_ROLE = await ft.DEFAULT_ADMIN_ROLE();
+<         const ftAdminRole = await ft.hasRole(FT_ADMIN_ROLE, deployer.address);
+<         if (!ftAdminRole) {
+<           throw new Error("❌ Deployer non ha DEFAULT_ADMIN_ROLE sul FT: impossibile assegnare MANAGER_ROLE");
+<         }
+<         const managerTx = await ft.grantRole(FT_MANAGER_ROLE, deployer.address);
+<         await managerTx.wait();
+<         console.log("✅ MANAGER_ROLE assegnato al deployer sul FT");
+<       }
+<       const ftTx = await ft.grantMinterRole(orchestratorAddress);
+<       await ftTx.wait();
+<       console.log("✅ FT minter role granted to orchestrator");
+<     } catch (err) {
+<       console.error("❌ Revert on FT grantMinterRole:", err);
+<       throw err;
+<     }
+<     
+<     // Verify orchestrator has minting permissions
+---
+>     await grantIfMissing(ft, FT_MINTER_ROLE, orchestratorAddress, "FT MINTER_ROLE → orchestrator");
+> // Verify orchestrator has minting permissions
+245,261c350,351
+<     // Deploy solo Orchestrator, blocca altri deploy finché non è ok
+<     if (process.env.ORCHESTRATOR_ADDRESS) {
+<       orchestratorAddress = process.env.ORCHESTRATOR_ADDRESS;
+<       console.log("✅ Orchestrator già deployato:", orchestratorAddress);
+<     } else {
+<       const Orchestrator = await ethers.getContractFactory("OceanMangaOrchestrator");
+<       orchestrator = await Orchestrator.deploy(
+<         nftAddress,
+<         ftAddress,
+<         creatorAddress,
+<         charityAddress,
+<         { gasLimit: 9000000 }
+<       );
+<       await orchestrator.waitForDeployment();
+<       orchestratorAddress = await orchestrator.getAddress();
+<       console.log("✅ Orchestrator deployed:", orchestratorAddress);
+<     }
+---
+>     // Evita di ridistribuire l'orchestrator: usa quello già presente
+>     console.log("♻️ Using orchestrator:", orchestratorAddress);
+268a359,394
+>   // Helper: controllo fondi prima dei deploy costosi
+>   async function canAffordDeploy(factory, args, label) {
+>     try {
+>       const gasEstimate = await factory.estimateGas.deploy(...args);
+>       const fee = await ethers.provider.getFeeData();
+>       const price = fee.maxFeePerGas || fee.gasPrice || ethers.parseUnits("1", "gwei");
+>       const cost = gasEstimate * price;
+>       const bal = await deployer.provider.getBalance(deployer.address);
+>       const margin = cost + (cost / 10n); // +10%
+>       if (bal < margin) {
+>         console.warn(`⚠️ Insufficient funds to deploy ${label}. Needed ~${ethers.formatEther(margin)} ETH, balance ${ethers.formatEther(bal)} ETH.`);
+>         return { ok: false, needed: margin, balance: bal };
+>       }
+>       return { ok: true };
+>     } catch (e) {
+>       console.warn(`[WARN] Unable to estimate gas for ${label}:`, e.message);
+>       return { ok: true };
+>     }
+>   }
+> 
+>   // Deploy TokenRouter
+>   console.log("\n🔄 Deploying TokenRouter...");
+>   const TokenRouter = await ethers.getContractFactory("TokenRouter");
+>   const affordRouter = await canAffordDeploy(TokenRouter, [orchestratorAddress, ftAddress], "TokenRouter");
+>   if (!affordRouter.ok) {
+>     console.log("⏭️ Skipping TokenRouter deployment due to low balance. Top-up and rerun this step.");
+>   } else {
+>     const fee = await ethers.provider.getFeeData();
+>     const router = await TokenRouter.deploy(orchestratorAddress, ftAddress, {
+>       maxFeePerGas: fee.maxFeePerGas || undefined,
+>       maxPriorityFeePerGas: fee.maxPriorityFeePerGas || undefined,
+>     });
+>     await router.waitForDeployment();
+>     routerAddress = await router.getAddress();
+>     console.log("✅ TokenRouter deployed:", routerAddress);
+>   }
+270c396,413
+<   // Grant MINTER_ROLE to swapper (for reverse swaps)
+---
+>     // Deploy Swapper
+>     console.log("\n🔄 Deploying AdvancedSwapper...");
+>     const Swapper = await ethers.getContractFactory("AdvancedSwapper");
+>     const affordSwapper = await canAffordDeploy(Swapper, [orchestratorAddress, ftAddress], "AdvancedSwapper");
+>     if (!affordSwapper.ok) {
+>       console.log("⏭️ Skipping AdvancedSwapper deployment due to low balance. Top-up and rerun this step.");
+>     } else {
+>       const feeS = await ethers.provider.getFeeData();
+>       swapper = await Swapper.deploy(orchestratorAddress, ftAddress, {
+>         maxFeePerGas: feeS.maxFeePerGas || undefined,
+>         maxPriorityFeePerGas: feeS.maxPriorityFeePerGas || undefined,
+>       });
+>       await swapper.waitForDeployment();
+>       swapperAddress = await swapper.getAddress();
+>       console.log("✅ AdvancedSwapper deployed:", swapperAddress);
+>     }
+> 
+>   // Grant MINTER_ROLE to swapper (reverse swaps) – usa helper uniforme
+272,325c415,470
+<   const swapperTx = await ft.grantRole(FT_MINTER_ROLE, swapperAddress);
+<   await swapperTx.wait();
+<   console.log("✅ Swapper can mint COSMICS tokens for reverse swaps");
+< 
+<   // Integra nuovi token nello swapper
+<   console.log("🔗 Adding supported tokens to swapper...");
+<   // ALGORAND
+<   await swapper.addSupportedToken("0x3a51f2a377ea8b55faf3c671138a00503b031af3", "1000000000000000", "AGORAND", 18);
+<   // Arbitrum (ARB)
+<   await swapper.addSupportedToken("0x912CE59144191C1204E64559FE8253a0e49E6548", "1000000000000000000", "ARB", 18);
+<   // BAL
+<   await swapper.addSupportedToken("0xBA12222222228d8Ba445958a75a0704d566BF2C8", "1000000000000000000", "BAL", 18);
+<   // BIO
+<   await swapper.addSupportedToken("0x226a2fa2556c48245e57cd1cba4c6c9e67077dd2", "1000000000000000", "BIO", 18);
+<   // cbETH
+<   await swapper.addSupportedToken("0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22", "1000000000000000000", "cbETH", 18);
+<   // Chainlink (LINK)
+<   await swapper.addSupportedToken("0x514910771AF9Ca656af840dff83E8264EcF986CA", "1000000000000000000", "LINK", 18);
+<   // Compound USDC (cUSDCv3)
+<   await swapper.addSupportedToken("0xb125e6687d4313864e53df431d5425969c15eb2f", "10000000000000000", "cUSDCv3", 18);
+<   // DAI
+<   await swapper.addSupportedToken("0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb", "1000000000000000", "DAI", 18);
+<   // DepressionStop Token (DST) su Polygon
+<   await swapper.addSupportedToken("0xAf783f67a83754b5989256fA180534232dF83a0a", "1000000000000000000", "DST", 18);
+<   // ETH Bridge
+<   await swapper.addSupportedToken("0x4200000000000000000000000000000000000006", "1000000000000000000", "ETHBRIDGE", 18);
+<   // Ethereum Universal Token
+<   await swapper.addSupportedToken("0x1cff25b095cf6595afabe35dd7e5348666e57c11", "1000000000000000000", "ETHU", 18);
+<   // LINK
+<   await swapper.addSupportedToken("0x514910771AF9Ca656af840dff83E8264EcF986CA", "1000000000000000000", "LINK", 18);
+<   // MATIC Universal Token
+<   await swapper.addSupportedToken("0xe868c3d83ec287c01bcb533a33d197d9bfa79dad", "1000000000000000000", "MATICU", 18);
+<   // OOE
+<   await swapper.addSupportedToken("0x6cbb2598881940d08d5ea3fa8f557e02996e1031", "1000000000000000", "OOE", 18);
+<   // OP
+<   await swapper.addSupportedToken("0x4200000000000000000000000000000000000042", "1000000000000000000", "OP", 18);
+<   // Price Oracle Sentinel
+<   await swapper.addSupportedToken("0xD228edaA3BD33D604f5561e187782aD9D5B65571", "1000000000000000", "SENTINEL", 18);
+<   // protocol token
+<   await swapper.addSupportedToken("0x1cff25b095cf6595afabe35dd7e5348666e57c11", "1000000000000000", "TOKEN", 18);
+<   // SLD Solidary Token
+<   await swapper.addSupportedToken("0x18794e4168dc77f0ee3963ef3c3b4460b33cfb5b", "1000000000000000", "SLDY", 18); // Sostituisci con l'indirizzo reale di SLDY
+<   // SOL Solidary Music
+<   await swapper.addSupportedToken("0x321974e059c54d009eb57d77ea903d70e6edbef2", "1000000000000000", "SOLMUS", 18);
+<   // uDogeToken
+<   await swapper.addSupportedToken("0x12e96c2bfea6e835cf8dd38a5834fa61cf723736", "1000000000000000", "uDOGE", 18);
+<   // USDC
+<   await swapper.addSupportedToken("0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "1000000000000", "USDC", 6);
+<   // USDC Bridge
+<   await swapper.addSupportedToken("0x46ae9BaB8CEA96610807a275EBD36f8e916b5C61", "1000000000000", "USDCBRIDGE", 6);
+<   // USDC MATIC Wrapper
+<   await swapper.addSupportedToken("0xD89ea85ee5dD2027dbC29Fbc198DC197D44c3d70", "1000000000000", "USDCMATIC", 6);
+<   // USOL
+<   await swapper.addSupportedToken("0x9b8df6e244526ab5f6e6400d331db28c8fdddb55", "1000000000000000", "USOL", 18);
+---
+>   if (swapperAddress) {
+>     await grantIfMissing(ft, FT_MINTER_ROLE, swapperAddress, "FT MINTER_ROLE → swapper");
+>   } else {
+>     console.log("ℹ️ Skipping swapper role grant (no swapper deployed)");
+>   }
+> 
+>     // Integra nuovi token nello swapper
+>     console.log("🔗 Adding supported tokens to swapper...");
+>     // ALGORAND
+>     await swapper.addSupportedToken("0x3a51f2a377ea8b55faf3c671138a00503b031af3", "1000000000000000", "AGORAND", 18);
+>     // Arbitrum (ARB)
+>     await swapper.addSupportedToken("0x912CE59144191C1204E64559FE8253a0e49E6548", "1000000000000000000", "ARB", 18);
+>     // BAL
+>     await swapper.addSupportedToken("0xBA12222222228d8Ba445958a75a0704d566BF2C8", "1000000000000000000", "BAL", 18);
+>     // BIO
+>     await swapper.addSupportedToken("0x226a2fa2556c48245e57cd1cba4c6c9e67077dd2", "1000000000000000", "BIO", 18);
+>     // cbETH
+>     await swapper.addSupportedToken("0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22", "1000000000000000000", "cbETH", 18);
+>     // Chainlink (LINK)
+>     await swapper.addSupportedToken("0x514910771AF9Ca656af840dff83E8264EcF986CA", "1000000000000000000", "LINK", 18);
+>     // Compound USDC (cUSDCv3)
+>     await swapper.addSupportedToken("0xb125e6687d4313864e53df431d5425969c15eb2f", "10000000000000000", "cUSDCv3", 18);
+>     // DAI
+>     await swapper.addSupportedToken("0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb", "1000000000000000", "DAI", 18);
+>     // DepressionStop Token (DST) su Polygon
+>     await swapper.addSupportedToken("0xAf783f67a83754b5989256fA180534232dF83a0a", "1000000000000000000", "DST", 18);
+>     // ETH Bridge
+>     await swapper.addSupportedToken("0x4200000000000000000000000000000000000006", "1000000000000000000", "ETHBRIDGE", 18);
+>     // Ethereum Universal Token
+>     await swapper.addSupportedToken("0x1cff25b095cf6595afabe35dd7e5348666e57c11", "1000000000000000000", "ETHU", 18);
+>     // LINK
+>     await swapper.addSupportedToken("0x514910771AF9Ca656af840dff83E8264EcF986CA", "1000000000000000000", "LINK", 18);
+>     // MATIC Universal Token
+>     await swapper.addSupportedToken("0xe868c3d83ec287c01bcb533a33d197d9bfa79dad", "1000000000000000000", "MATICU", 18);
+>     // OOE
+>     await swapper.addSupportedToken("0x6cbb2598881940d08d5ea3fa8f557e02996e1031", "1000000000000000", "OOE", 18);
+>     // OP
+>     await swapper.addSupportedToken("0x4200000000000000000000000000000000000042", "1000000000000000000", "OP", 18);
+>     // Price Oracle Sentinel
+>     await swapper.addSupportedToken("0xD228edaA3BD33D604f5561e187782aD9D5B65571", "1000000000000000", "SENTINEL", 18);
+>     // protocol token
+>     await swapper.addSupportedToken("0x1cff25b095cf6595afabe35dd7e5348666e57c11", "1000000000000000", "TOKEN", 18);
+>     // SLD Solidary Token
+>     await swapper.addSupportedToken("0x18794e4168dc77f0ee3963ef3c3b4460b33cfb5b", "1000000000000000", "SLDY", 18); // Sostituisci con l'indirizzo reale di SLDY
+>     // SOL Solidary Music
+>     await swapper.addSupportedToken("0x321974e059c54d009eb57d77ea903d70e6edbef2", "1000000000000000", "SOLMUS", 18);
+>     // uDogeToken
+>     await swapper.addSupportedToken("0x12e96c2bfea6e835cf8dd38a5834fa61cf723736", "1000000000000000", "uDOGE", 18);
+>     // USDC
+>     await swapper.addSupportedToken("0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "1000000000000", "USDC", 6);
+>     // USDC Bridge
+>     await swapper.addSupportedToken("0x46ae9BaB8CEA96610807a275EBD36f8e916b5C61", "1000000000000", "USDCBRIDGE", 6);
+>     // USDC MATIC Wrapper
+>     await swapper.addSupportedToken("0xD89ea85ee5dD2027dbC29Fbc198DC197D44c3d70", "1000000000000", "USDCMATIC", 6);
+>     // USOL
+>     await swapper.addSupportedToken("0x9b8df6e244526ab5f6e6400d331db28c8fdddb55", "1000000000000000", "USOL", 18);
+343,344c488
+<         TokenRouter: routerAddress,
+<         AdvancedSwapper: swapperAddress
+---
+>   TokenRouter: routerAddress,
+361d504
+<     const fs = require('fs');
+363a507,510
+>     // Persist orchestrator address
+> fs.writeFileSync('last-orchestrator.json', JSON.stringify({ orchestrator: orchestratorAddress }, null, 2));
+> console.log("[PERSIST] Saved orchestrator address to last-orchestrator.json");
+> 
+442c589
+< });
+\ No newline at end of file
+---
+> });
