@@ -1,0 +1,444 @@
+/* APP Ethernum Styles */
+.ethernum-app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+.ethernum-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.ethernum-header h1 {
+  margin: 0 0 10px 0;
+  font-size: 2.5em;
+  font-weight: bold;
+}
+
+.ethernum-subtitle {
+  margin: 0;
+  font-size: 1.1em;
+  opacity: 0.95;
+}
+
+/* Wallet Section */
+.wallet-section {
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.connect-btn {
+  padding: 14px 32px;
+  font-size: 1.1em;
+  font-weight: 600;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.connect-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.connect-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.wallet-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.account-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.account-badge .label {
+  font-weight: 600;
+  color: #666;
+}
+
+.account-badge .address {
+  font-family: 'Courier New', monospace;
+  color: #333;
+  font-weight: 500;
+}
+
+.network-badge {
+  padding: 6px 12px;
+  background: #d4edda;
+  color: #155724;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.switch-network-btn {
+  padding: 8px 16px;
+  background: #ffc107;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.switch-network-btn:hover {
+  background: #ffb300;
+}
+
+/* Balances Section */
+.balances-section {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.balances-section h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.3em;
+}
+
+.balance-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.balance-item:last-child {
+  margin-bottom: 0;
+}
+
+.balance-label {
+  font-weight: 600;
+  color: #555;
+}
+
+.balance-value {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #667eea;
+  font-family: 'Courier New', monospace;
+}
+
+/* Contract Info Section */
+.contract-info-section {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: #fff;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+}
+
+.contract-info-section h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.3em;
+}
+
+.contract-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.contract-detail:last-child {
+  border-bottom: none;
+}
+
+.contract-detail .label {
+  font-weight: 600;
+  color: #555;
+}
+
+.contract-link {
+  color: #667eea;
+  text-decoration: none;
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.contract-link:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+/* Mint Section */
+.mint-section {
+  margin-bottom: 25px;
+  padding: 25px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mint-section h2 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 1.5em;
+  text-align: center;
+}
+
+.mint-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.95em;
+}
+
+.form-input,
+.form-textarea {
+  padding: 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 1em;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Estimate Box */
+.estimating {
+  text-align: center;
+  color: #667eea;
+  font-weight: 500;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 0;
+}
+
+.estimate-box {
+  padding: 16px;
+  background: linear-gradient(135deg, #e0f7fa 0%, #e1bee7 100%);
+  border-radius: 10px;
+  border: 2px solid #b39ddb;
+}
+
+.estimate-box h4 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 1.1em;
+}
+
+.estimate-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.estimate-row:last-child {
+  border-bottom: none;
+}
+
+.estimate-row.highlight {
+  background: rgba(255, 255, 255, 0.5);
+  padding: 10px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.estimate-value {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Mint Button */
+.mint-btn {
+  padding: 16px;
+  font-size: 1.2em;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  margin-top: 8px;
+}
+
+.mint-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.mint-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Status Messages */
+.error-box {
+  padding: 16px;
+  background: #f8d7da;
+  border: 2px solid #f5c6cb;
+  border-radius: 8px;
+  color: #721c24;
+  margin-top: 16px;
+}
+
+.error-box strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.success-box {
+  padding: 20px;
+  background: #d4edda;
+  border: 2px solid #c3e6cb;
+  border-radius: 12px;
+  color: #155724;
+  margin-top: 16px;
+}
+
+.success-box h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.3em;
+  color: #155724;
+}
+
+.result-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.result-detail:last-child {
+  border-bottom: none;
+}
+
+.result-detail .label {
+  font-weight: 600;
+  color: #155724;
+}
+
+.result-detail .value {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #155724;
+}
+
+.result-detail .value.highlight {
+  font-size: 1.2em;
+  color: #0c5518;
+}
+
+.tx-link {
+  color: #004085;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.tx-link:hover {
+  color: #002752;
+  text-decoration: underline;
+}
+
+/* Footer */
+.ethernum-footer {
+  text-align: center;
+  padding: 20px;
+  margin-top: 30px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  color: #666;
+}
+
+.ethernum-footer p {
+  margin: 5px 0;
+}
+
+.fee-info {
+  font-size: 0.9em;
+  font-weight: 500;
+  color: #888;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ethernum-app {
+    padding: 15px;
+  }
+
+  .ethernum-header h1 {
+    font-size: 2em;
+  }
+
+  .mint-section {
+    padding: 20px;
+  }
+
+  .balance-item,
+  .contract-detail,
+  .estimate-row,
+  .result-detail {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
