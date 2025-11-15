@@ -5,7 +5,8 @@
 
 # File di ambiente
 .env
-
+BASE_COMPLETE_ECOSYSTEM.json
+last-orchestrator.json
 # Log e report
 *.log
 npm-debug.log*
