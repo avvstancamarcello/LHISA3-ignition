@@ -18,3 +18,11 @@ coverage.json
 # File del sistema operativo
 .DS_Store
 Thumbs.db
+
+# deploy artifacts
+BASE_*.json
+last-orchestrator.json
+deployment-progress.json
+polygon-ecosystem-*.json
+# app envs
+lunacomics-ethernum/.env
