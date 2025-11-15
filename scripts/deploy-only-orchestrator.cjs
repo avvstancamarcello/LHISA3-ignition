@@ -1,7 +1,7 @@
 // 🚀 DEPLOY SOLO ORCHESTRATOR
 const { ethers } = require("ethers");
 
-const PRIVATE_KEY = "8f2a46c1eb83a1fcec604207c4c0e34c2b46b2d045883311509cb592b282dfb1";
+const PRIVATE_KEY = process.env.PRIVATE_KEY || 'sostituisci_con_env'; 
 const POLYGON_RPC = "https://aged-tiniest-frost.matic.quiknode.pro/b50bb4625032afb94b57bf5efd608270059e0da8";
 const NFT_STORAGE_API_KEY = "d36ca24b490aae57a698"
 
